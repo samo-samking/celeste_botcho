@@ -1,0 +1,11 @@
+/* Icônes SVG (packages/shared/src/icons) — couleur héritée du texte */
+.icon {
+  inline-size: 1.25em;
+  block-size: 1.25em;
+  flex-shrink: 0;
+  vertical-align: -0.25em;
+}
+.icon[width] {
+  inline-size: auto;
+  block-size: auto;
+}

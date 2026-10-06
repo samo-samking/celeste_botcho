@@ -211,7 +211,13 @@ Interlignage : 1,5 pour le corps, 1,15 pour les titres. Longueur de ligne max : 
 
 ### 4.4 Iconographie et images
 
-- **Icônes** : SVG inline, trait 1,75 px, 24 × 24, `currentColor`. Jeu recommandé : Lucide (copier uniquement les icônes utilisées dans `components/icons.ts`, pas de bibliothèque entière).
+- **Icônes** : jeu maison « Trait doré », 95 SVG dans `packages/shared/src/icons/` :
+  - `interface/` (81) : grille 24, trait 1,5 px, bouts ronds, `currentColor` ;
+  - `signature/` (10) : grille 48, formes pleines à pointes effilées, 2e couleur `--icon-accent` (or clair) ;
+  - utilisation : `import { bag } from '@celeste/shared/icons'` puis `${icon(bag)}` (helper `icons/icon.ts`) ; `icon(close, { label: 'Fermer' })` pour un bouton sans texte ;
+  - seules les icônes importées partent dans le build ; après ajout d'un SVG : `npm run icons` ;
+  - générateur et planche d'aperçu : `design/icones/` (non publié) ;
+  - [x] `brands/` (4) : `whatsapp`, `facebook`, `tiktok`, `instagram` — glyphes officiels non modifiés (Simple Icons 16.34, CC0), une couleur, marge de 2 px via `viewBox="-2 -2 28 28"` ; planche de contrôle `design/icones/apercu-marques.html`.
 - **Logo** : `apps/*/public/brand/logo.png` (201 × 79, fond transparent), affiché à 40 px de haut maximum dans l'en-tête. Monogramme seul pour le favicon et les icônes. Originaux dans `design/`. Une version SVG (🔒 D12) remplacera le PNG.
 - **Photos produit** : ratio **1:1**, fond uni chocolat ou crème, produit centré. Minimum 1 200 × 1 200 px à l'envoi.
 - **Bannières d'accueil** : ratio **16:9** sur bureau, **4:5** sur mobile (deux recadrages via Cloudinary `g_auto`).

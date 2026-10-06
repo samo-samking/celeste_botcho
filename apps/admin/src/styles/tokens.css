@@ -42,6 +42,7 @@
   --color-accent-hover: var(--gold-400);
   --color-on-accent: var(--choco-950);
   --color-price: var(--gold-400);
+  --icon-accent: var(--gold-300); /* 2e couleur des icônes signature */
   --color-price-old: color-mix(in srgb, var(--cream-200) 60%, transparent);
 
   /* Typographie */
