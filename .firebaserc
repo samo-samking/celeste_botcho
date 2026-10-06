@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "celestebotcho-322a5",
+    "prod": "celestebotcho-322a5"
+  },
+  "targets": {
+    "celestebotcho-322a5": {
+      "hosting": {
+        "public": ["celestebotcho-322a5"],
+        "admin": []
+      }
+    }
+  }
+}

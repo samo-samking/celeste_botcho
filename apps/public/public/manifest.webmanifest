@@ -1,0 +1,11 @@
+{
+  "name": "Céleste Bôtchô",
+  "short_name": "Céleste Bôtchô",
+  "description": "Plus de volume, plus de confiance",
+  "lang": "fr",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#140800",
+  "theme_color": "#140800",
+  "icons": []
+}

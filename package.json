@@ -1,0 +1,31 @@
+{
+  "name": "celeste-botcho",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:public": "npm run dev -w @celeste/public",
+    "dev:admin": "npm run dev -w @celeste/admin",
+    "build": "npm run build -w @celeste/public && npm run build -w @celeste/admin",
+    "typecheck": "tsc -b apps/public apps/admin packages/shared",
+    "lint": "eslint .",
+    "test": "vitest run --root packages/shared",
+    "test:rules": "firebase emulators:exec --only firestore \"vitest run firebase/tests\"",
+    "emulators": "firebase emulators:start",
+    "deploy:rules": "firebase deploy --only firestore",
+    "deploy:public": "firebase deploy --only hosting:public",
+    "deploy:admin": "firebase deploy --only hosting:admin"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.0.0",
+    "vite": "^6.0.0",
+    "vite-plugin-pwa": "^0.21.0",
+    "vitest": "^2.1.0"
+  }
+}

@@ -1,0 +1,99 @@
+/* Charte Céleste Bôtchô — chocolat et or, relevée sur l'image OG officielle (og-default.jpg) */
+:root {
+  /* Chocolat */
+  --choco-950: #0d0500;
+  --choco-900: #140800;
+  --choco-800: #1f0e03;
+  --choco-700: #2e1606;
+  --choco-600: #683201;
+  --choco-500: #a94d17;
+
+  /* Caramel (couleur des boules Toffi) */
+  --caramel-600: #883c05;
+  --caramel-500: #a94d17;
+
+  /* Or */
+  --gold-600: #dd931b;
+  --gold-500: #efb830;
+  --gold-400: #f7c83e;
+  --gold-300: #fdda4b;
+  --gold-gradient: linear-gradient(135deg, #fdda4b 0%, #efb830 45%, #dd931b 100%);
+
+  /* Neutres */
+  --cream-50: #fdf9f2;
+  --cream-100: #fbf5ea;
+  --cream-200: #f1e6d2;
+
+  /* États */
+  --color-success: #3f9b5b;
+  --color-warning: #e0a526;
+  --color-danger: #d9534f;
+  --color-info: #4a90c2;
+  --color-whatsapp: #25d366;
+
+  /* Rôles */
+  --color-bg: var(--choco-900);
+  --color-surface: var(--choco-800);
+  --color-surface-2: var(--choco-700);
+  --color-border: color-mix(in srgb, var(--gold-500) 25%, transparent);
+  --color-text: var(--cream-100);
+  --color-text-muted: var(--cream-200);
+  --color-accent: var(--gold-500);
+  --color-accent-hover: var(--gold-400);
+  --color-on-accent: var(--choco-950);
+  --color-price: var(--gold-400);
+  --color-price-old: color-mix(in srgb, var(--cream-200) 60%, transparent);
+
+  /* Typographie */
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.375rem;
+  --fs-2xl: 1.75rem;
+  --fs-3xl: clamp(2rem, 6vw, 3rem);
+
+  /* Espacements */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Formes */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 999px;
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 6px 18px rgb(0 0 0 / 0.35);
+  --shadow-gold: 0 0 0 1px var(--gold-500), 0 6px 20px rgb(239 184 48 / 0.25);
+
+  /* Mouvement */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 450ms;
+
+  /* Mise en page */
+  --touch-min: 44px;
+  --container-max: 1200px;
+  --header-h: 60px;
+  --z-header: 50;
+  --z-drawer: 80;
+  --z-modal: 90;
+  --z-toast: 100;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+}

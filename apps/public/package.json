@@ -1,0 +1,16 @@
+{
+  "name": "@celeste/public",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@celeste/shared": "*",
+    "@preact/signals-core": "^1.8.0",
+    "lit-html": "^3.2.0"
+  }
+}

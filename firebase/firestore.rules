@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.role in ['owner', 'manager'];
+    }
+    function isOwner() {
+      return request.auth != null && request.auth.token.role == 'owner';
+    }
+
+    match /categories/{id} {
+      allow read: if resource.data.isActive == true || isAdmin();
+      allow write: if isAdmin();
+    }
+    match /products/{id} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+    match /promotions/{id} {
+      allow read: if resource.data.isActive == true || isAdmin();
+      allow write: if isAdmin();
+    }
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+
+    match /orders/{id} {
+      allow create: if request.resource.data.orderNumber == id
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.adminNote == ''
+        && request.resource.data.items.size() > 0
+        && request.resource.data.items.size() <= 20
+        && request.resource.data.total is int
+        && request.resource.data.total > 0
+        && request.resource.data.total < 1000000
+        && request.resource.data.customer.name.size() <= 80
+        && request.resource.data.customer.phone.matches('^\+225[0-9]{10}$');
+      allow read, update: if isAdmin();
+      allow delete: if false;
+    }
+    match /orderTracking/{id} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create: if request.resource.data.status == 'new';
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+    match /messages/{id} {
+      allow create: if request.resource.data.status == 'new'
+        && request.resource.data.body.size() <= 2000
+        && request.resource.data.createdAt == request.time;
+      allow read, update: if isAdmin();
+      allow delete: if isOwner();
+    }
+    match /admins/{uid} {
+      allow read: if isAdmin();
+      allow write: if isOwner();
+    }
+    match /auditLogs/{id} {
+      allow create: if isAdmin();
+      allow read: if isOwner();
+      allow update, delete: if false;
+    }
+  }
+}
