@@ -49,6 +49,7 @@ Programme complet, de l'état actuel du dépôt jusqu'à la mise en ligne et au 
 | Fonction `onMessageCreated` (e-mail à la propriétaire) | [x] (non déployée) |
 | Boîte d'envoi `contact@celestebotcho.com` (LWS, SMTP 465) | [x] |
 | Image OG par défaut (`apps/public/public/og/og-default.jpg`, 1200×630, 139 Ko) + couleurs de la charte | [x] |
+| Logo (`brand/logo.png`), favicon, icônes PWA 180 / 192 / 512 / maskable ; originaux rangés dans `design/` (non publié) | [x] |
 | Site Hosting `admin` | [ ] |
 | Code applicatif (vues, ViewModels, modèles…) | [ ] fichiers vides |
 
@@ -71,7 +72,7 @@ Programme complet, de l'état actuel du dépôt jusqu'à la mise en ligne et au 
 | D9 | Nombre d'utilisateurs de l'admin | Phase 6 | 1 propriétaire |
 | D10 | Vraies photos produits en plus des affiches ? | Phase 3 / 4 | affiches recadrées |
 | D11 | Adresse qui reçoit les notifications | Phase 5 | `contact@celestebotcho.com` |
-| D12 | Fichier du logo seul (SVG ou PNG HD fond transparent) | Phase 2 / 8 | couleurs ✅ relevées sur l'image OG ; logo extrait de l'image OG en attendant |
+| D12 | Logo en **SVG** ou PNG ≥ 1 024 px (le PNG actuel ne fait que 201 × 79 px) | Phase 8 (icônes nettes) | ✅ couleurs et logo en place ; icônes tirées du monogramme de l'image OG, un peu douces |
 | D13 | Durée de conservation des coordonnées clientes | Phase 12 | 24 mois |
 | D14 | Collecter l'e-mail des clientes (facultatif) pour leur envoyer les confirmations ? | Phase 5 | oui, champ facultatif |
 
@@ -211,7 +212,7 @@ Interlignage : 1,5 pour le corps, 1,15 pour les titres. Longueur de ligne max : 
 ### 4.4 Iconographie et images
 
 - **Icônes** : SVG inline, trait 1,75 px, 24 × 24, `currentColor`. Jeu recommandé : Lucide (copier uniquement les icônes utilisées dans `components/icons.ts`, pas de bibliothèque entière).
-- **Logo** : SVG si fourni (🔒 D12), sinon PNG 512 px. Versions : complète, monogramme (favicon), or sur chocolat.
+- **Logo** : `apps/*/public/brand/logo.png` (201 × 79, fond transparent), affiché à 40 px de haut maximum dans l'en-tête. Monogramme seul pour le favicon et les icônes. Originaux dans `design/`. Une version SVG (🔒 D12) remplacera le PNG.
 - **Photos produit** : ratio **1:1**, fond uni chocolat ou crème, produit centré. Minimum 1 200 × 1 200 px à l'envoi.
 - **Bannières d'accueil** : ratio **16:9** sur bureau, **4:5** sur mobile (deux recadrages via Cloudinary `g_auto`).
 - **Toutes les images passent par Cloudinary** avec `f_auto,q_auto` et la largeur exacte affichée (voir annexe C). Toujours `width` / `height` dans le HTML (pas de CLS), `loading="lazy"` sauf l'image LCP (`fetchpriority="high"`).
@@ -637,7 +638,6 @@ Gabarit `<head>` commun (dans chaque `.html`, valeurs remplacées par le pré-re
 
 <!-- Icônes et PWA -->
 <link rel="icon" href="/favicon.ico" sizes="32x32">
-<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.webmanifest">
 ```
@@ -728,7 +728,8 @@ Les robots de WhatsApp et Facebook n'exécutent pas le JavaScript : les balises 
 **Durée** : 2 jours.
 
 - [ ] `manifest.webmanifest` : compléter les icônes (192, 512, 512 `maskable`), `screenshots` (mobile), `shortcuts` (Catalogue, Suivi), `categories: ["shopping"]`, `id: "/"`.
-- [ ] Icônes générées depuis le logo (🔒 D12) : `favicon.ico`, `icon.svg`, `apple-touch-icon.png` (180 px), `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`.
+- [x] Icônes générées depuis le monogramme : `favicon.ico` (16/32/48), `icons/apple-touch-icon.png` (180), `icons/icon-192.png`, `icons/icon-512.png`, `icons/icon-maskable-512.png` — déclarées dans le manifest.
+- [ ] Les régénérer depuis le logo SVG quand il sera fourni (🔒 D12), et ajouter `icons/icon.svg`.
 - [ ] `vite-plugin-pwa` (Workbox) :
   - pré-cache : HTML, JS, CSS, polices, icônes ;
   - images Cloudinary : `CacheFirst`, 60 entrées, 30 jours ;
