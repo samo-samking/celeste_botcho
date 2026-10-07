@@ -1,0 +1,6 @@
+/* Polices auto-hébergées (§4.2) — Urbanist pour les titres, Poppins pour le texte.
+   Urbanist : fichier variable, unicode-range => seul le sous-ensemble latin est téléchargé pour du français. */
+@import "@fontsource-variable/urbanist/wght.css";
+@import "@fontsource/poppins/latin-400.css";
+@import "@fontsource/poppins/latin-500.css";
+@import "@fontsource/poppins/latin-600.css";

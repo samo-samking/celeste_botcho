@@ -1,0 +1,68 @@
+/* Sections de l'accueil sous le hero */
+
+.home-section {
+  padding-block: var(--space-8);
+  scroll-margin-top: var(--header-h);
+}
+
+.home-section__kicker {
+  color: var(--gold);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.home-section__title {
+  margin-block: var(--space-2) var(--space-6);
+  font-size: var(--fs-3xl);
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-5);
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-5);
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+.step {
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.step__number {
+  display: grid;
+  place-items: center;
+  inline-size: 40px;
+  block-size: 40px;
+  margin-block-end: var(--space-4);
+  border-radius: 50%;
+  background: var(--title-gradient);
+  color: var(--bg);
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+
+.step__title {
+  margin-block-end: var(--space-2);
+  font-size: var(--fs-xl);
+}
+
+.step__text {
+  color: var(--color-text-muted);
+}
+
+.steps__cta {
+  margin-block-start: var(--space-6);
+}

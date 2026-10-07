@@ -6,9 +6,14 @@
   "targets": {
     "celestebotcho-322a5": {
       "hosting": {
-        "public": ["celestebotcho-322a5"],
-        "admin": []
+        "public": [
+          "celestebotcho-322a5"
+        ],
+        "admin": [
+          "celestebotcho-admin"
+        ]
       }
     }
-  }
+  },
+  "etags": {}
 }

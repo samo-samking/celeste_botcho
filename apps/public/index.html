@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Céleste Bôtchô — Bonbons Toffi pour vos formes, livrés à Abidjan</title>
+    <meta name="description" content="Bonbons Toffi au goût caramel, en petit, moyen et grand pot. Commande sur WhatsApp, livraison à Abidjan et partout en Côte d'Ivoire." />
+    <meta name="theme-color" content="#17120a" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_CI" />
+    <meta property="og:title" content="Céleste Bôtchô — Plus de volume, plus de confiance" />
+    <meta property="og:description" content="Bonbons Toffi au goût caramel. Commande sur WhatsApp, livraison partout en Côte d'Ivoire." />
+    <meta property="og:image" content="/og/og-default.jpg" />
+    <!-- 1re image du hero : chargée tout de suite, selon l'écran -->
+    <link rel="preload" as="image" href="/hero/desktop/frame_0001.webp" media="(min-width: 720px)" fetchpriority="high" />
+    <link rel="preload" as="image" href="/hero/mobile/frame_0001.webp" media="(max-width: 719.98px)" fetchpriority="high" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <noscript>
+      <p style="padding: 24px; text-align: center">
+        Activez JavaScript pour voir la boutique, ou commandez directement sur WhatsApp :
+        <a href="https://wa.me/2250507884470">05 07 88 44 70</a>.
+      </p>
+    </noscript>
+    <script type="module" src="/src/pages/home/home.view.ts"></script>
+  </body>
+</html>

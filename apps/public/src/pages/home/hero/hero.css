@@ -1,0 +1,425 @@
+/* Hero de l'accueil : séquence d'images pilotée par le défilement.
+   Le point de rupture (720px) doit correspondre à MOBILE_QUERY (config.ts). */
+
+.hero {
+  position: relative;
+  block-size: 450vh;
+  background: var(--bg);
+}
+
+.hero__sticky {
+  position: sticky;
+  inset-block-start: 0;
+  block-size: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+  isolation: isolate;
+}
+
+/* --- Image ------------------------------------------------------------- */
+.hero__media {
+  position: absolute;
+  inset: 0;
+}
+
+.hero__canvas {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.hero__still {
+  display: none;
+}
+
+/* Raccord du fond : la vidéo est plus claire en haut, plus sombre en bas */
+.hero__edges {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to right, var(--bg), transparent 140px),
+    linear-gradient(to left, var(--bg), transparent 140px),
+    linear-gradient(to bottom, var(--bg), transparent 80px),
+    linear-gradient(to top, var(--bg), transparent 80px);
+}
+
+/* Masque des faux produits (cube) : calé sur l'image dessinée (--img-x, --img-w posés par hero.ts),
+   transparent jusqu'à 66 % de sa largeur, --bg opaque dès 74 %, jusqu'au bord droit. */
+.hero__mask {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(var(--img-x, 0px) + var(--img-w, 100vw) * 0.66);
+  inset-inline-end: 0;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent 0, var(--bg) calc(var(--img-w, 100vw) * 0.08));
+}
+.hero--no-cube .hero__mask {
+  display: none;
+}
+
+/* Dégradé sous le texte (mobile) */
+.hero__shade {
+  display: none;
+}
+
+/* --- Textes ------------------------------------------------------------ */
+.hero__text {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: clamp(var(--space-6), 7vw, 120px);
+  display: grid;
+  inline-size: min(420px, 30vw);
+  transform: translateY(-50%);
+  z-index: 2;
+}
+
+.hero-block {
+  grid-area: 1 / 1;
+  align-self: center;
+  opacity: 0; /* état piloté par hero-text.ts */
+  will-change: opacity, transform;
+}
+.hero-block:first-child {
+  opacity: 1;
+}
+
+.hero-block__kicker {
+  margin-block-end: var(--space-3);
+  color: var(--gold);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hero-block__title {
+  font-size: clamp(2rem, 3.6vw, 3.25rem);
+}
+
+.hero-block__text {
+  margin-block-start: var(--space-4);
+  max-inline-size: 36ch;
+  color: var(--text);
+  font-size: var(--fs-lg);
+}
+
+.hero-block__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-start: var(--space-6);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.08em;
+}
+.hero-block__hint-icon {
+  color: var(--gold);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-block__hint-icon {
+    animation: hero-hint 1.6s var(--ease-out) infinite;
+  }
+}
+@keyframes hero-hint {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 0.6;
+  }
+}
+
+.hero-block__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-block-start: var(--space-5);
+}
+.hero-block__note {
+  margin-block-start: var(--space-4);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+/* --- Indicateur de progression : rail or, un losange par séquence ---- */
+.hero-progress {
+  --rail-h: clamp(140px, 26vh, 220px);
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: clamp(var(--space-4), 2.2vw, var(--space-6));
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  transform: translateY(-50%);
+}
+
+.hero-progress__rail {
+  position: relative;
+  inline-size: 1px;
+  block-size: var(--rail-h);
+  background: color-mix(in srgb, var(--text) 18%, transparent);
+}
+.hero-progress__fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, var(--gold-light), var(--gold-dark));
+  box-shadow: 0 0 8px rgb(245 184 0 / 0.45);
+  transform: scaleY(0); /* piloté par p */
+  transform-origin: top;
+}
+
+.hero-progress__mark {
+  position: absolute;
+  inset-block-start: calc(var(--at) * 100%);
+  inset-inline-start: 50%;
+  inline-size: 9px;
+  block-size: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border: 1px solid color-mix(in srgb, var(--text) 45%, transparent);
+  background: var(--bg);
+  transform: rotate(45deg);
+  transition:
+    transform var(--duration-slow) var(--ease-out),
+    background-color var(--duration-slow) var(--ease-out),
+    border-color var(--duration-slow) var(--ease-out),
+    box-shadow var(--duration-slow) var(--ease-out);
+}
+.hero-progress__mark.is-passed {
+  border-color: var(--gold-dark);
+  background: var(--gold-dark);
+}
+.hero-progress__mark.is-active {
+  border-color: var(--gold-light);
+  background: var(--gold);
+  box-shadow:
+    0 0 0 4px rgb(245 184 0 / 0.14),
+    0 0 14px rgb(245 184 0 / 0.65);
+  transform: rotate(45deg) scale(1.35);
+}
+
+.hero-progress__count {
+  display: grid;
+  justify-items: center;
+  margin-block-start: var(--space-2);
+  font-family: var(--font-display);
+  line-height: 1;
+}
+.hero-progress__index {
+  color: var(--gold-light);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.hero-progress__total {
+  margin-block-start: 4px;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.12em;
+}
+.hero-progress__label {
+  color: var(--text-muted);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+/* --- Produits ---------------------------------------------------------- */
+.hero__products {
+  --pot-unit: min(1vh, 0.5vw);
+  --reflect-h: calc(var(--pot-unit) * 5);
+  position: absolute;
+  inset-inline-end: clamp(var(--space-5), 5vw, 96px);
+  inset-block-end: 9vh;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: calc(var(--pot-unit) * 1.6);
+  padding-inline: calc(var(--pot-unit) * 2);
+}
+/* ligne dorée sur laquelle les pots sont posés */
+.hero__products::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: var(--reflect-h);
+  block-size: 1px;
+  background: linear-gradient(to right, transparent, var(--gold) 15%, var(--gold-light) 50%, var(--gold) 85%, transparent);
+  opacity: calc(0.8 * var(--line-opacity, 0));
+}
+
+.hero-pot {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-end;
+  opacity: 0; /* état piloté par hero-products.ts */
+  will-change: opacity, transform;
+}
+.hero-pot__img {
+  inline-size: auto;
+  block-size: calc(var(--pot-unit) * var(--pot-size));
+  filter: drop-shadow(0 14px 18px rgb(0 0 0 / 0.55));
+}
+/* léger reflet sous la ligne */
+.hero-pot__reflect {
+  block-size: var(--reflect-h);
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.28), transparent 90%);
+  mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.28), transparent 90%);
+}
+.hero-pot__reflect img {
+  inline-size: auto;
+  block-size: calc(var(--pot-unit) * var(--pot-size));
+  transform: scaleY(-1);
+}
+
+/* --- Mention sous le hero ---------------------------------------------- */
+.hero-disclaimer {
+  padding: var(--space-3) var(--space-4) 0;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  text-align: center;
+}
+
+/* --- Mobile ------------------------------------------------------------ */
+@media (max-width: 719.98px) {
+  .hero {
+    block-size: 350vh;
+  }
+  .hero__sticky {
+    block-size: 100svh;
+  }
+
+  .hero__shade {
+    display: block;
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    block-size: 45%;
+    pointer-events: none;
+    background: linear-gradient(to top, var(--bg) 0%, var(--bg) 30%, transparent 100%);
+  }
+
+  .hero__text {
+    inset-block: auto 0;
+    inset-inline: 0;
+    inline-size: auto;
+    padding: var(--space-5) var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom));
+    text-align: center;
+    transform: none;
+  }
+  .hero-block {
+    align-self: end;
+    justify-items: center;
+  }
+  .hero-block__title {
+    font-size: clamp(1.75rem, 8vw, 2.25rem);
+  }
+  .hero-block__text {
+    margin-inline: auto;
+    font-size: var(--fs-md);
+  }
+  .hero-block__actions {
+    justify-content: center;
+  }
+
+  .hero-progress {
+    --rail-h: 110px;
+    inset-inline-start: var(--space-3);
+    inset-block-start: 38%;
+  }
+  .hero-progress__label {
+    display: none;
+  }
+
+  .hero__products {
+    --pot-unit: 4.7px;
+    --reflect-h: 10px;
+    inset-inline: 0;
+    inset-block-end: calc(var(--hero-text-h, 200px) - var(--space-3));
+    justify-content: center;
+    margin-inline: auto;
+    inline-size: max-content;
+  }
+}
+
+/* --- Animation désactivée : image fixe de face, blocs dans le flux ---- */
+@media (prefers-reduced-motion: reduce) {
+  .hero,
+  .hero__sticky {
+    block-size: auto;
+  }
+  .hero__sticky {
+    position: relative;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+  }
+  /* image entière (16:9 desktop, 3:4 mobile) : le masque se cale en % de sa largeur */
+  .hero__media {
+    position: relative;
+    inline-size: min(100%, 75vh * 16 / 9);
+    aspect-ratio: 16 / 9;
+    margin-inline: auto;
+  }
+  .hero__mask {
+    inset-inline-start: 66%;
+    background: linear-gradient(to right, transparent 0, var(--bg) 23.5%); /* 8 % de l'image sur les 34 % masqués */
+  }
+  .hero__products::after {
+    opacity: 0.8;
+  }
+  .hero__canvas,
+  .hero__shade,
+  .hero-progress,
+  .hero-block__hint {
+    display: none;
+  }
+  .hero__still {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+  .hero__text,
+  .hero__products {
+    position: static;
+    inline-size: auto;
+    transform: none;
+  }
+  .hero__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-7);
+    max-inline-size: 640px;
+    margin-inline: auto;
+    padding: var(--space-6) var(--space-4);
+  }
+  .hero-block,
+  .hero-pot {
+    opacity: 1;
+    transform: none;
+  }
+  .hero__products {
+    --pot-unit: 6px;
+    justify-content: center;
+    margin: 0 auto var(--space-6);
+  }
+}
+@media (prefers-reduced-motion: reduce) and (max-width: 719.98px) {
+  .hero__media {
+    inline-size: min(100%, 70svh * 3 / 4);
+    aspect-ratio: 3 / 4;
+  }
+  .hero__products {
+    --pot-unit: 4.2px;
+  }
+}

@@ -38,7 +38,7 @@ service cloud.firestore {
         && request.resource.data.total > 0
         && request.resource.data.total < 1000000
         && request.resource.data.customer.name.size() <= 80
-        && request.resource.data.customer.phone.matches('^\+225[0-9]{10}$');
+        && request.resource.data.customer.phone.matches('^[+]225[0-9]{10}$');
       allow read, update: if isAdmin();
       allow delete: if false;
     }

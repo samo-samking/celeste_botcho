@@ -46,7 +46,7 @@
   --color-price-old: color-mix(in srgb, var(--cream-200) 60%, transparent);
 
   /* Typographie */
-  --font-display: "Playfair Display", Georgia, serif;
+  --font-display: "Urbanist Variable", "Urbanist", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-body: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --fs-xs: 0.75rem;
   --fs-sm: 0.875rem;

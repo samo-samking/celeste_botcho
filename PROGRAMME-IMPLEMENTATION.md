@@ -40,7 +40,7 @@ Programme complet, de l'état actuel du dépôt jusqu'à la mise en ligne et au 
 | Arborescence complète (monorepo npm workspaces) | [x] |
 | Configs TypeScript strict, Vite (public multi-pages + PWA, admin SPA), ESLint | [x] |
 | `firebase.json` (2 cibles Hosting, en-têtes, émulateurs, Functions) | [x] |
-| Règles Firestore de départ + 7 index composites | [x] (non déployés) |
+| Règles Firestore de départ + 7 index composites | [x] déployés, 26 tests verts |
 | Projet Firebase `celestebotcho-322a5`, forfait Blaze, app web enregistrée | [x] |
 | Base Firestore créée en `africa-south1` | [x] |
 | Connexion Firebase (`services/firebase.ts`) + App Check reCAPTCHA v3 | [x] |
@@ -50,7 +50,7 @@ Programme complet, de l'état actuel du dépôt jusqu'à la mise en ligne et au 
 | Boîte d'envoi `contact@celestebotcho.com` (LWS, SMTP 465) | [x] |
 | Image OG par défaut (`apps/public/public/og/og-default.jpg`, 1200×630, 139 Ko) + couleurs de la charte | [x] |
 | Logo (`brand/logo.png`), favicon, icônes PWA 180 / 192 / 512 / maskable ; originaux rangés dans `design/` (non publié) | [x] |
-| Site Hosting `admin` | [ ] |
+| Site Hosting `admin` (`celestebotcho-admin`) | [x] |
 | Code applicatif (vues, ViewModels, modèles…) | [ ] fichiers vides |
 
 ---
@@ -177,13 +177,13 @@ Source de vérité : [`apps/public/src/styles/tokens.css`](apps/public/src/style
 
 | Rôle | Police | Graisses | Usage |
 |---|---|---|---|
-| Titres | **Playfair Display** (variable) | 600, 700 | H1–H3, nom de produit, bandeau promo |
+| Titres | **Urbanist** (variable) | 600, 700 | H1–H3, nom de produit, bandeau promo |
 | Texte | **Poppins** | 400, 500, 600 | Corps, boutons, formulaires, prix |
 
 **Chargement — auto-hébergé, pas de Google Fonts** (performance, CSP stricte, pas d'appel tiers) :
-- [ ] `npm i -w @celeste/public -w @celeste/admin @fontsource-variable/playfair-display @fontsource/poppins`
-- [ ] Importer uniquement les sous-ensembles `latin` et les graisses listées.
-- [ ] `font-display: swap` ; précharger (`<link rel="preload" as="font" crossorigin>`) uniquement Poppins 400 et Playfair 700.
+- [x] `npm i -w @celeste/public -w @celeste/admin @fontsource-variable/urbanist @fontsource/poppins`
+- [x] Importer uniquement les sous-ensembles `latin` et les graisses listées.
+- [~] `font-display: swap` (fait par fontsource ; préchargement à faire en Phase 2) ; précharger (`<link rel="preload" as="font" crossorigin>`) uniquement Poppins 400 et Urbanist (fichier variable, couvre 600 et 700).
 - [ ] Polices de repli ajustées (`size-adjust`) pour limiter le décalage de mise en page (CLS).
 
 **Échelle** (mobile d'abord)
@@ -272,39 +272,42 @@ View (lit-html + CSS) ──► ViewModel (signals) ──► Model / domain (fo
 **Durée** : 3 à 4 jours.
 
 ### 0.1 Dépendances
-- [ ] `npm i firebase -w @celeste/shared` (déjà déclaré, vérifier l'installation)
-- [ ] Polices (§4.2)
-- [ ] `npm i -D @types/node` à la racine (pour `vite.config.ts` et `scripts/`)
-- [ ] `npm i -D tsx firebase-admin` à la racine (exécution des scripts `scripts/*.ts`)
-- [ ] Approuver les scripts d'installation d'esbuild : `npm approve-scripts esbuild`
+- [x] `npm i firebase -w @celeste/shared` (déjà déclaré, vérifier l'installation)
+- [x] Polices (§4.2)
+- [x] `npm i -D @types/node` à la racine (pour `vite.config.ts` et `scripts/`)
+- [x] `npm i -D tsx firebase-admin` à la racine (exécution des scripts `scripts/*.ts`)
+- [x] Approuver les scripts d'installation d'esbuild : `npm approve-scripts esbuild`
 
 ### 0.2 Firebase
-- [ ] Créer le site admin : `firebase hosting:sites:create celestebotcho-admin`
-- [ ] Le lier : `firebase target:apply hosting admin celestebotcho-admin`
-- [ ] Activer **Authentication › E-mail / mot de passe** ; désactiver l'inscription publique (Paramètres › Actions utilisateur).
-- [ ] Déployer règles et index : `firebase deploy --only firestore`
-- [ ] App Check : enregistrer l'app web avec reCAPTCHA v3 (clé secrète dans la console) ; **mode « surveillance »** tant que le site n'est pas en ligne.
-- [ ] Alerte de budget Blaze : Google Cloud Console › Facturation › Budgets, seuil 5 000 FCFA (≈ 8 €), alertes à 50 / 90 / 100 %.
+- [x] Créer le site admin : `firebase hosting:sites:create celestebotcho-admin`
+- [x] Le lier : `firebase target:apply hosting admin celestebotcho-admin`
+- [x] Activer **Authentication › E-mail / mot de passe** ; désactiver l'inscription publique (Paramètres › Actions utilisateur).
+- [x] Déployer règles et index : `firebase deploy --only firestore`
+- [x] App Check : enregistrer l'app web avec reCAPTCHA v3 (clé secrète dans la console) ; **mode « surveillance »** tant que le site n'est pas en ligne.
+- [x] Alerte de budget Blaze : Google Cloud Console › Facturation › Budgets, seuil 5 $, alertes à 50 / 90 / 100 %.
 - [ ] Optionnel : projet `dev` séparé (le document d'architecture le prévoit). En attendant, travailler sur les **émulateurs**.
 
 ### 0.3 Scripts
-- [ ] `scripts/set-admin.ts` : `tsx scripts/set-admin.ts <email> owner|manager` ; pose le custom claim `role` via Admin SDK, crée le document `admins/{uid}`.
-- [ ] `scripts/seed.ts` : remplit l'émulateur (ou le projet dev) avec 3 catégories, 8 produits, `settings/public`, `settings/legal`, 2 promos, 10 commandes de test.
+- [x] `scripts/set-admin.ts` (+ `--emulator`) : `tsx scripts/set-admin.ts <email> owner|manager` ; pose le custom claim `role` via Admin SDK, crée le document `admins/{uid}`.
+- [x] `scripts/seed.ts` : remplit l'émulateur (uniquement ; + 3 messages et 2 comptes admin de test, mot de passe `celeste-dev`) avec 3 catégories, 8 produits, `settings/public`, `settings/legal`, 2 promos, 10 commandes de test.
 - [ ] `scripts/prerender.ts` : voir Phase 7.
-- [ ] Ajouter au `package.json` racine : `"seed": "tsx scripts/seed.ts"`, `"set-admin": "tsx scripts/set-admin.ts"`, `"prerender": "tsx scripts/prerender.ts"`.
+- [x] Ajouter au `package.json` racine : `"seed": "tsx scripts/seed.ts"`, `"set-admin": "tsx scripts/set-admin.ts"`, `"prerender": "tsx scripts/prerender.ts"`.
 
 ### 0.4 Tests des règles
-- [ ] `firebase/tests/rules.test.ts` avec `@firebase/rules-unit-testing`, un test par interdiction :
+- [x] `firebase/tests/rules.test.ts` avec `@firebase/rules-unit-testing`, un test par interdiction :
   - un visiteur ne peut pas lire une commande, lister `orderTracking`, lire un produit brouillon, écrire un produit, écrire `settings`, supprimer une commande ;
   - un visiteur peut créer une commande valide, mais pas avec `status != 'new'`, un total non entier, plus de 20 articles, un téléphone mal formé, une `adminNote` remplie ;
   - un `manager` ne peut pas écrire `settings`, `admins`, ni lire `auditLogs` ;
   - personne ne peut modifier ou supprimer un `auditLog`.
 
 ### 0.5 CI/CD (`.github/workflows/deploy.yml`)
-- [ ] Étapes : `npm ci` → `npm run lint` → `npm run typecheck` → `npm test` → `npm run test:rules` → `npm run build` → `npm run prerender` → déploiement.
-- [ ] Pull request : `FirebaseExtended/action-hosting-deploy` en canal de prévisualisation (expire après 7 jours).
-- [ ] Branche `main` : déploiement production (hosting public + admin, règles, functions).
-- [ ] Secrets GitHub : `FIREBASE_SERVICE_ACCOUNT` (JSON du compte de service), variables `VITE_*` du `.env.local`.
+- [x] Étapes : `npm ci` → `npm run lint` → `npm run typecheck` → `npm test` → `npm run test:rules` → `npm run build` → `npm run prerender` → déploiement.
+- [x] Pull request : `FirebaseExtended/action-hosting-deploy` en canal de prévisualisation (expire après 7 jours).
+- [x] Production (hosting public + admin, règles, functions) : **déclenchement manuel** (Actions › Run workflow › « deploy ») tant que le site est testé en local ; passer en automatique sur `main` ensuite (condition indiquée en tête de `deploy.yml`).
+- [x] Variables GitHub : `VITE_*` du `.env.local` et paramètres de `functions/.env` (dépôt **public** : jamais de secret dans le code).
+- [ ] Secret GitHub `FIREBASE_SERVICE_ACCOUNT` (JSON du compte de service) : nécessaire pour les prévisualisations et le déploiement.
+- [x] Windows : `scripts/stop-emulators.ts` (lancé avant `test:rules` et `emulators`) arrête l'émulateur Firestore resté orphelin après `emulators:exec`.
+- [x] Fichiers de tests de la Phase 1 remplis de `it.todo` (`npm test` vert, 24 tests à écrire).
 
 **Livrable** : `npm run dev:public` et `npm run dev:admin` démarrent ; le compte propriétaire se connecte à l'admin (écran vide) ; la CI passe.
 

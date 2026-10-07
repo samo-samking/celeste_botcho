@@ -31,22 +31,32 @@
   --color-info: #4a90c2;
   --color-whatsapp: #25d366;
 
+  /* Identité de l'accueil (fond relevé sur la vidéo du hero : #17120a au milieu du bord gauche)
+     Miroir TypeScript : apps/public/src/pages/home/config.ts (COLORS) */
+  --bg: #17120a;
+  --gold: #f5b800;
+  --gold-light: #ffd95a;
+  --gold-dark: #c98a00;
+  --title-gradient: linear-gradient(180deg, var(--gold-light) 0%, var(--gold-dark) 100%);
+  --text: #f5efe6;
+  --text-muted: #cfc5b6;
+
   /* Rôles */
-  --color-bg: var(--choco-900);
-  --color-surface: var(--choco-800);
-  --color-surface-2: var(--choco-700);
+  --color-bg: var(--bg);
+  --color-surface: color-mix(in srgb, var(--bg) 92%, var(--gold) 8%);
+  --color-surface-2: color-mix(in srgb, var(--bg) 85%, var(--gold) 15%);
   --color-border: color-mix(in srgb, var(--gold-500) 25%, transparent);
-  --color-text: var(--cream-100);
-  --color-text-muted: var(--cream-200);
-  --color-accent: var(--gold-500);
-  --color-accent-hover: var(--gold-400);
-  --color-on-accent: var(--choco-950);
-  --color-price: var(--gold-400);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--gold);
+  --color-accent-hover: var(--gold-light);
+  --color-on-accent: var(--bg);
+  --color-price: var(--gold-light);
   --icon-accent: var(--gold-300); /* 2e couleur des icônes signature */
   --color-price-old: color-mix(in srgb, var(--cream-200) 60%, transparent);
 
   /* Typographie */
-  --font-display: "Playfair Display", Georgia, serif;
+  --font-display: "Urbanist Variable", "Urbanist", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-body: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --fs-xs: 0.75rem;
   --fs-sm: 0.875rem;
@@ -84,7 +94,7 @@
   /* Mise en page */
   --touch-min: 44px;
   --container-max: 1200px;
-  --header-h: 60px;
+  --header-h: 76px; /* logo 52px + marges (site-header.css) */
   --z-header: 50;
   --z-drawer: 80;
   --z-modal: 90;

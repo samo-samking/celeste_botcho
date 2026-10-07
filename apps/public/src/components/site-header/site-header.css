@@ -1,0 +1,142 @@
+.site-header {
+  --logo-h: 52px;
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: var(--z-header);
+  transition:
+    background-color var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out);
+}
+/* voile discret en haut pour détacher le menu de l'image */
+.site-header::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 -24px;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--bg) 70%, transparent), transparent);
+  transition: opacity var(--duration-base) var(--ease-out);
+}
+.site-header.is-solid {
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--gold) 22%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.site-header.is-solid::before {
+  opacity: 0;
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  block-size: calc(var(--logo-h) + 2 * var(--space-3));
+  padding-inline: clamp(var(--space-4), 4vw, var(--space-7));
+}
+
+.site-header__brand {
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+}
+.site-header__brand img {
+  inline-size: auto;
+  block-size: var(--logo-h);
+  filter: drop-shadow(0 2px 10px rgb(245 184 0 / 0.18));
+}
+
+/* --- Menu ------------------------------------------------------------- */
+.site-header__nav {
+  margin-inline-start: auto;
+}
+.site-header__nav ul {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* petit losange or entre les entrées */
+.site-header__nav li + li::before {
+  content: '';
+  display: inline-block;
+  inline-size: 4px;
+  block-size: 4px;
+  margin-inline: var(--space-5);
+  vertical-align: middle;
+  background: var(--gold);
+  opacity: 0.55;
+  transform: rotate(45deg);
+}
+
+.site-header__link {
+  position: relative;
+  display: inline-block;
+  padding-block: var(--space-2);
+  color: color-mix(in srgb, var(--text) 82%, transparent);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color var(--duration-base) var(--ease-out);
+}
+/* filet or qui se déploie depuis le centre */
+.site-header__link::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-light), transparent);
+  transform: scaleX(0);
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+.site-header__link:hover,
+.site-header__link.is-current {
+  color: var(--gold-light);
+}
+.site-header__link:hover::after,
+.site-header__link.is-current::after {
+  transform: scaleX(1);
+}
+
+/* --- Bouton WhatsApp ---------------------------------------------------- */
+.site-header__wa {
+  flex-shrink: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transition:
+    opacity var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+.site-header__wa.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+@media (max-width: 899.98px) {
+  .site-header__nav li + li::before {
+    margin-inline: var(--space-3);
+  }
+  .site-header__link {
+    letter-spacing: 0.12em;
+  }
+}
+
+@media (max-width: 719.98px) {
+  .site-header {
+    --logo-h: 40px;
+  }
+  .site-header__nav {
+    display: none;
+  }
+  .site-header__wa {
+    margin-inline-start: auto;
+  }
+}

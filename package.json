@@ -13,21 +13,36 @@
     "typecheck": "tsc -p apps/public && tsc -p apps/admin && tsc -p packages/shared",
     "lint": "eslint .",
     "test": "vitest run --root packages/shared",
+    "pretest:rules": "tsx scripts/stop-emulators.ts",
     "test:rules": "firebase emulators:exec --only firestore \"vitest run firebase/tests\"",
+    "preemulators": "tsx scripts/stop-emulators.ts",
     "emulators": "firebase emulators:start",
+    "seed": "tsx scripts/seed.ts",
+    "set-admin": "tsx scripts/set-admin.ts",
+    "prerender": "tsx scripts/prerender.ts",
     "deploy:rules": "firebase deploy --only firestore",
     "deploy:public": "firebase deploy --only hosting:public",
     "deploy:admin": "firebase deploy --only hosting:admin",
-    "icons": "tsx scripts/icons-index.ts"
+    "icons": "tsx scripts/icons-index.ts",
+    "hero-assets": "tsx scripts/hero-assets.ts"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^4.0.0",
+    "@types/node": "^26.6.4",
     "eslint": "^9.0.0",
+    "ffmpeg-static": "^5.3.0",
+    "firebase-admin": "^14.5.0",
     "tsx": "^4.23.15",
     "typescript": "^5.6.0",
     "typescript-eslint": "^8.0.0",
     "vite": "^6.0.0",
     "vite-plugin-pwa": "^0.21.0",
     "vitest": "^2.1.0"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true,
+    "esbuild@0.28.2": true,
+    "esbuild@0.21.5": true,
+    "ffmpeg-static@5.3.0": true
   }
 }
