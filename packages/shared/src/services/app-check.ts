@@ -1,10 +1,12 @@
 import type { FirebaseApp } from 'firebase/app';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
-// App Check (reCAPTCHA v3). Inactif tant que VITE_RECAPTCHA_SITE_KEY n'est pas renseignée.
+// App Check (reCAPTCHA v3). Inactif tant que VITE_RECAPTCHA_SITE_KEY n'est pas renseignée,
+// et avec les émulateurs (ils ne vérifient pas App Check).
 export function initAppCheck(app: FirebaseApp): void {
   const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
   if (!siteKey || siteKey === 'a-remplacer') return;
+  if (import.meta.env.VITE_USE_EMULATORS === 'true') return;
 
   if (import.meta.env.DEV) {
     (self as unknown as { FIREBASE_APPCHECK_DEBUG_TOKEN: boolean }).FIREBASE_APPCHECK_DEBUG_TOKEN = true;

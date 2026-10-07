@@ -281,14 +281,6 @@
   transform: scaleY(-1);
 }
 
-/* --- Mention sous le hero ---------------------------------------------- */
-.hero-disclaimer {
-  padding: var(--space-3) var(--space-4) 0;
-  color: var(--text-muted);
-  font-size: var(--fs-xs);
-  text-align: center;
-}
-
 /* --- Mobile ------------------------------------------------------------ */
 @media (max-width: 719.98px) {
   .hero {

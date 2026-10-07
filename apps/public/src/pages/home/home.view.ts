@@ -3,19 +3,20 @@ import '../../main';
 import './home.css';
 import './hero/hero.css';
 import '../../components/site-header/site-header.css';
-import '../../components/product-card/product-card.css';
+import './vitrine/vitrine.css';
+import '../../components/cart-drawer/cart-drawer.css';
 import '../../components/site-footer/site-footer.css';
 
 import { html, render } from 'lit-html';
-import { effect } from '@preact/signals-core';
 import { siteHeader, setHeaderState, trackSections } from '../../components/site-header/site-header';
-import { productCard } from '../../components/product-card/product-card';
+import { initCart } from '../../components/cart-drawer/cart-entry';
 import { siteFooter } from '../../components/site-footer/site-footer';
-import { HERO, HERO_BLOCKS, HERO_PRODUCTS, ORDER_STEPS, PHONES, SOCIALS } from './config';
+import { CONTACT_EMAIL, HERO, HERO_BLOCKS, HERO_PRODUCTS, ORDER_STEPS, PHONES, SOCIALS } from './config';
 import { HomeViewModel } from './home.viewmodel';
 import { initHero } from './hero/hero';
 import { createHeroText, heroTextTemplate } from './hero/hero-text';
 import { createHeroProducts, heroProductsTemplate } from './hero/hero-products';
+import { vitrineSkeleton } from './vitrine/vitrine-skeleton';
 
 const vm = new HomeViewModel();
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -49,18 +50,10 @@ const heroTemplate = () => html`
       </div>
     </div>
   </section>
-  <p class="hero-disclaimer">${HERO.disclaimer}</p>
 `;
 
-const productsTemplate = () => html`
-  <section class="home-section" id="produits" aria-labelledby="produits-titre">
-    <div class="container">
-      <p class="home-section__kicker">Boutique</p>
-      <h2 class="home-section__title title-gold" id="produits-titre">Nos produits</h2>
-      <div class="product-grid">${vm.products.value.map((p) => productCard(p, vm.orderHref(p)))}</div>
-    </div>
-  </section>
-`;
+// Vitrine des catégories : squelette tout de suite, données et animation chargées à l'approche.
+const vitrineTemplate = () => html`<section class="vitrine" id="produits" aria-labelledby="vitrine-title"></section>`;
 
 const stepsTemplate = () => html`
   <section class="home-section" id="commander" aria-labelledby="commander-titre">
@@ -85,17 +78,28 @@ const stepsTemplate = () => html`
 
 const app = document.getElementById('app')!;
 
-effect(() => {
-  render(
-    html`
-      <a class="skip-link" href="#produits">Aller aux produits</a>
-      ${siteHeader(NAV, vm.whatsappHref)}
-      <main>${heroTemplate()} ${productsTemplate()} ${stepsTemplate()}</main>
-      ${siteFooter({ phones: PHONES, whatsappHref: vm.whatsappHref, socials: SOCIALS })}
-    `,
-    app,
-  );
-});
+render(
+  html`
+    <a class="skip-link" href="#produits">Aller aux produits</a>
+    ${siteHeader(NAV, vm.whatsappHref)}
+    <main>${heroTemplate()} ${vitrineTemplate()} ${stepsTemplate()}</main>
+    ${siteFooter({ phones: PHONES, email: CONTACT_EMAIL, whatsappHref: vm.whatsappHref, socials: SOCIALS })}
+  `,
+  app,
+);
+
+// La vitrine (et le SDK Firebase) ne se charge qu'à l'approche de la section : le hero reste léger.
+const vitrineEl = app.querySelector<HTMLElement>('.vitrine')!;
+render(vitrineSkeleton(), vitrineEl); // même conteneur que mountVitrine : le vrai contenu remplace le squelette
+const vitrineObserver = new IntersectionObserver(
+  (entries) => {
+    if (!entries.some((e) => e.isIntersecting)) return;
+    vitrineObserver.disconnect();
+    void import('./vitrine/vitrine-view').then((m) => m.mountVitrine(vitrineEl));
+  },
+  { rootMargin: '800px 0px' },
+);
+vitrineObserver.observe(vitrineEl);
 
 // --- Animation du hero (le DOM ci-dessus est rendu une seule fois)
 const header = app.querySelector<HTMLElement>('.site-header')!;
@@ -106,6 +110,7 @@ const progressMarks = [...heroEl.querySelectorAll<HTMLElement>('.hero-progress__
 const progressIndex = heroEl.querySelector<HTMLElement>('.hero-progress__index')!;
 const progressLabel = heroEl.querySelector<HTMLElement>('.hero-progress__label')!;
 trackSections(header);
+initCart(header); // compteur du panier ; le panneau se charge à la première ouverture
 const products = createHeroProducts(sticky);
 // hero est créé juste après ; scrollToProgress ne sert qu'au clavier, bien plus tard
 const text = createHeroText(heroEl.querySelector<HTMLElement>('.hero__text')!, HERO_BLOCKS, (p) => hero.scrollToProgress(p));

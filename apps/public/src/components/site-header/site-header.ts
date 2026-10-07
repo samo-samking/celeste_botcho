@@ -1,9 +1,9 @@
-// En-tête fixe et transparent : logo, menu, bouton WhatsApp compact.
+// En-tête fixe et transparent : logo, menu, bouton WhatsApp compact, bouton panier.
 // setHeaderState() montre le bouton WhatsApp (fin du hero) et pose un fond une fois le hero dépassé.
 // trackSections() souligne l'entrée du menu dont la section est à l'écran.
 import { html } from 'lit-html';
 import { icon } from '@celeste/shared/icons/icon';
-import { whatsapp } from '@celeste/shared/icons';
+import { bag, whatsapp } from '@celeste/shared/icons';
 
 export interface HeaderLink {
   href: string;
@@ -25,6 +25,10 @@ export function siteHeader(links: HeaderLink[], whatsappHref: string) {
         <a class="site-header__wa btn btn--primary btn--sm" href=${whatsappHref} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
           ${icon(whatsapp)} <span>WhatsApp</span>
         </a>
+        <!-- compteur et ouverture du panier : components/cart-drawer/cart-entry.ts -->
+        <button class="site-header__cart" type="button" data-cart-open aria-label="Panier, vide">
+          ${icon(bag)}<span class="site-header__badge" hidden>0</span>
+        </button>
       </div>
     </header>
   `;

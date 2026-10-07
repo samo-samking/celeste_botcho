@@ -1,10 +1,11 @@
 // Pied de page : contacts, réseaux sociaux (affichés seulement si renseignés), mention santé.
 import { html, nothing } from 'lit-html';
 import { icon } from '@celeste/shared/icons/icon';
-import { facebook, instagram, phone, tiktok, whatsapp } from '@celeste/shared/icons';
+import { facebook, instagram, mail, phone, tiktok, whatsapp } from '@celeste/shared/icons';
 
 export interface FooterData {
   phones: string[]; // +225XXXXXXXXXX
+  email: string;
   whatsappHref: string;
   socials: { facebook: string; instagram: string; tiktok: string };
 }
@@ -15,7 +16,7 @@ const displayPhone = (e164: string) => e164.replace(/^\+225/, '').replace(/(\d{2
 const SOCIAL_ICONS = { facebook, instagram, tiktok } as const;
 const SOCIAL_LABELS = { facebook: 'Facebook', instagram: 'Instagram', tiktok: 'TikTok' } as const;
 
-export function siteFooter({ phones, whatsappHref, socials }: FooterData) {
+export function siteFooter({ phones, email, whatsappHref, socials }: FooterData) {
   const socialLinks = (Object.keys(socials) as (keyof typeof socials)[]).filter((k) => socials[k]);
   return html`
     <footer class="site-footer" id="contact">
@@ -31,6 +32,7 @@ export function siteFooter({ phones, whatsappHref, socials }: FooterData) {
             ${phones.map(
               (p) => html`<li><a href="tel:${p}">${icon(phone)} ${displayPhone(p)}</a></li>`,
             )}
+            ${email ? html`<li><a href="mailto:${email}">${icon(mail)} ${email}</a></li>` : nothing}
             <li><a href=${whatsappHref} target="_blank" rel="noopener">${icon(whatsapp)} Écrire sur WhatsApp</a></li>
           </ul>
         </div>
@@ -51,7 +53,10 @@ export function siteFooter({ phones, whatsappHref, socials }: FooterData) {
 
       <div class="container site-footer__legal">
         <p>Nos produits ne remplacent pas un avis médical. En cas de doute, demandez conseil à un professionnel de santé.</p>
-        <p>© ${new Date().getFullYear()} Céleste Bôtchô</p>
+        <p>
+          © ${new Date().getFullYear()} Céleste Bôtchô ·
+          <button class="site-footer__cookies" type="button" data-cookie-settings>Gérer les cookies</button>
+        </p>
       </div>
     </footer>
   `;

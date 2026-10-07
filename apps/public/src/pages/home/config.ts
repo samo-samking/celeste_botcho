@@ -1,12 +1,15 @@
 // Configuration de l'accueil : numéro WhatsApp, couleurs, textes et réglages du hero.
 // Les valeurs marquées 🔒 attendent une décision de la vendeuse (PROGRAMME-IMPLEMENTATION.md §2).
-// Plus tard, WHATSAPP_NUMBER, PHONES et SOCIALS viendront de settings/public (Firestore).
+// Plus tard, WHATSAPP_NUMBER, PHONES, CONTACT_EMAIL et SOCIALS viendront de settings/public (Firestore).
 
 /** Numéro WhatsApp de la boutique, format international sans « + ». 🔒 D2 */
 export const WHATSAPP_NUMBER = '2250507884470';
 
 /** Numéros affichés dans le pied de page (format +225XXXXXXXXXX). 🔒 D2 */
 export const PHONES = ['+2250141047671', '+2250507884470', '+2250767107804'];
+
+/** Adresse e-mail de contact de la boutique (pied de page). */
+export const CONTACT_EMAIL = 'contact@celestebotcho.com';
 
 /** Réseaux sociaux : un lien vide n'est pas affiché. */
 export const SOCIALS = { facebook: '', instagram: '', tiktok: '' };
@@ -62,7 +65,6 @@ export const HERO = {
   ],
   canvasLabel:
     'Animation : une femme en tenue de sport noire tourne lentement sur elle-même au fil du défilement.',
-  disclaimer: "Image d'illustration générée. Résultats variables selon les personnes.",
 };
 
 export interface HeroBlock {

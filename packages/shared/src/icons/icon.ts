@@ -15,8 +15,11 @@ interface IconOptions {
 export function icon(source: string, { size, label, class: cls }: IconOptions = {}) {
   const a11y = label ? `role="img" aria-label="${label.replace(/"/g, '&quot;')}"` : 'aria-hidden="true"';
   const dims = size ? `width="${size}" height="${size}"` : '';
-  const svg = source
-    .replace(/\s(width|height)="[^"]*"/g, '')
-    .replace('<svg ', `<svg class="icon${cls ? ' ' + cls : ''}" ${dims} ${a11y} focusable="false" `);
+  // width/height retirés de la balise <svg> seulement : les <rect> en ont besoin
+  const svg = source.replace(/<svg\b[^>]*>/, (tag) =>
+    tag
+      .replace(/\s(width|height)="[^"]*"/g, '')
+      .replace('<svg ', `<svg class="icon${cls ? ' ' + cls : ''}" ${dims} ${a11y} focusable="false" `),
+  );
   return unsafeSVG(svg);
 }

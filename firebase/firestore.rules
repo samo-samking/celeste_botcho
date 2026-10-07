@@ -59,6 +59,11 @@ service cloud.firestore {
     match /admins/{uid} {
       allow read: if isAdmin();
       allow write: if isOwner();
+      // chaque admin met à jour sa propre date de connexion, et rien d'autre
+      allow update: if isAdmin()
+        && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLoginAt'])
+        && request.resource.data.lastLoginAt == request.time;
     }
     match /auditLogs/{id} {
       allow create: if isAdmin();

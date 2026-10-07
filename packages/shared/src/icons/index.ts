@@ -21,6 +21,7 @@ export { default as chevronUp } from './interface/chevron-up.svg?raw';
 export { default as clipboardList } from './interface/clipboard-list.svg?raw';
 export { default as clock } from './interface/clock.svg?raw';
 export { default as close } from './interface/close.svg?raw';
+export { default as cookie } from './interface/cookie.svg?raw';
 export { default as copy } from './interface/copy.svg?raw';
 export { default as dashboard } from './interface/dashboard.svg?raw';
 export { default as download } from './interface/download.svg?raw';

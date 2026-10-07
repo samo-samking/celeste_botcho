@@ -1,0 +1,178 @@
+.uploader {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.uploader__drop {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  padding: var(--space-5) var(--space-4);
+  border: 1px dashed color-mix(in srgb, var(--gold) 40%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--gold) 4%, transparent);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out);
+}
+.uploader__drop:hover,
+.uploader__drop.is-over {
+  border-color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 10%, transparent);
+}
+.uploader__drop:focus-within {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+.uploader__drop-icon {
+  color: var(--gold);
+  font-size: 1.4rem;
+}
+.uploader__drop-title {
+  font-weight: 600;
+  font-size: var(--fs-sm);
+}
+.uploader__drop-hint {
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);
+}
+
+.uploader__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.uploader--single .uploader__grid {
+  grid-template-columns: minmax(0, 260px);
+}
+.uploader__item {
+  display: grid;
+  gap: var(--space-2);
+}
+.uploader__item[draggable='true'] {
+  cursor: grab;
+}
+
+.uploader__thumb {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg) 70%, black);
+}
+.uploader--single .uploader__thumb {
+  aspect-ratio: 3 / 2;
+}
+.uploader__thumb img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+.uploader__placeholder {
+  display: grid;
+  place-items: center;
+  block-size: 100%;
+  color: var(--color-text-muted);
+  font-size: 1.5rem;
+}
+.has-error .uploader__thumb {
+  border-color: color-mix(in srgb, var(--color-danger) 60%, transparent);
+}
+.uploader__error {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-1);
+  block-size: 100%;
+  padding: var(--space-2);
+  color: #ff8a80;
+  font-size: var(--fs-xs);
+  text-align: center;
+}
+
+.uploader__progress {
+  position: absolute;
+  inset-inline: var(--space-2);
+  inset-block-end: var(--space-2);
+  block-size: 4px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: rgb(0 0 0 / 0.55);
+}
+.uploader__progress span {
+  display: block;
+  block-size: 100%;
+  background: var(--title-gradient);
+  transform-origin: left;
+  transition: transform var(--duration-fast) linear;
+}
+
+.uploader__badge {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-start: var(--space-2);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--gold);
+  color: var(--bg);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.uploader__tools {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-2);
+  display: flex;
+  gap: 4px;
+}
+.uploader__tool {
+  display: grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: rgb(10 8 5 / 0.78);
+  color: var(--text);
+  cursor: pointer;
+}
+.uploader__tool:hover {
+  background: rgb(10 8 5 / 0.95);
+  color: var(--gold-light);
+}
+.uploader__tool--danger:hover {
+  color: #ff8a80;
+}
+.uploader__tool:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.uploader__alt {
+  min-block-size: 36px;
+  padding: 0 var(--space-2);
+  border: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  font: 400 var(--fs-xs) var(--font-body);
+}
+.uploader__alt:focus {
+  border-color: var(--gold);
+  outline: none;
+}
+
+.uploader__full {
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+}

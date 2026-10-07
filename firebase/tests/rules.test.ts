@@ -159,6 +159,15 @@ describe("manager", () => {
   it("ne peut pas écrire admins", async () => {
     await assertFails(setDoc(doc(manager(), "admins/manager-uid"), { role: "owner" }));
   });
+  it("met à jour sa propre date de connexion (heure serveur), rien d'autre", async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), "admins/manager-uid"), { role: "manager", isActive: true, lastLoginAt: null });
+    });
+    await assertSucceeds(updateDoc(doc(manager(), "admins/manager-uid"), { lastLoginAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(manager(), "admins/manager-uid"), { lastLoginAt: new Date() }));
+    await assertFails(updateDoc(doc(manager(), "admins/manager-uid"), { role: "owner", lastLoginAt: serverTimestamp() }));
+    await assertFails(updateDoc(doc(manager(), "admins/owner-uid"), { lastLoginAt: serverTimestamp() }));
+  });
   it("ne peut pas lire auditLogs", async () => {
     await assertFails(getDoc(doc(manager(), "auditLogs/log1")));
   });

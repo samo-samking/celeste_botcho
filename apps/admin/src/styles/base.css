@@ -1,3 +1,150 @@
+/* Styles globaux de l'admin — identiques au site public (§2.1) */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+  background: var(--color-bg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  min-block-size: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+img,
+canvas,
+svg {
+  display: block;
+  max-inline-size: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.container {
+  inline-size: min(100% - 2 * var(--space-4), var(--container-max));
+  margin-inline: auto;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: fixed;
+  inset-block-start: var(--space-2);
+  inset-inline-start: var(--space-2);
+  z-index: calc(var(--z-header) + 1);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+.skip-link:focus-visible {
+  transform: none;
+}
+
+/* Titre en dégradé or (le texte reste lisible si background-clip n'est pas géré) */
+.title-gold {
+  color: var(--gold);
+  background: var(--title-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Boutons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-block-size: var(--touch-min);
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  background: transparent; /* pas le fond gris par défaut des <button> */
+  color: inherit;
+  font: 600 var(--fs-md) / 1.2 var(--font-body);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+.btn:active {
+  transform: scale(0.98);
+}
+.btn--primary {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+.btn--primary:hover {
+  background: var(--color-accent-hover);
+}
+.btn--secondary {
+  border-color: color-mix(in srgb, var(--gold) 60%, transparent);
+  color: var(--color-text);
+}
+.btn--secondary:hover {
+  background: color-mix(in srgb, var(--gold) 12%, transparent);
+}
+.btn--sm {
+  min-block-size: 36px;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--fs-sm);
+}
+
 /* Icônes SVG (packages/shared/src/icons) — couleur héritée du texte */
 .icon {
   inline-size: 1.25em;
@@ -8,4 +155,12 @@
 .icon[width] {
   inline-size: auto;
   block-size: auto;
+}
+
+/* Écran d'attente pendant la vérification de la session */
+.app-loading {
+  min-block-size: 100svh;
+  background:
+    radial-gradient(40% 30% at 50% 40%, rgb(245 184 0 / 0.1), transparent 70%),
+    var(--bg);
 }

@@ -3,6 +3,7 @@
 //   - séquence mobile  : 57 WebP 540×720, recadrées au centre sur la femme (une sur quatre) ;
 //     le cube de faux produits (75–96 % de la largeur) sort du cadre, aucun masque n'est nécessaire
 //   - photos produits  : WebP détourés (alpha conservé), 560 px de haut
+//   - illustration de la connexion admin : WebP 800 et 1200 px de large
 // Usage : npm run hero-assets
 //
 // Commandes ffmpeg équivalentes (depuis la racine du dépôt) :
@@ -55,4 +56,18 @@ for (const name of ['pot-rose', 'pot-bas', 'pot-blanc']) {
     file,
   ]);
   console.log(`✓ produits/${name}.webp : ${Math.round(statSync(file).size / 1024)} Ko`);
+}
+
+// Illustration de l'écran de connexion de l'admin (moitié gauche sur ordinateur)
+const adminBrand = join(root, 'apps/admin/public/brand');
+for (const width of [800, 1200]) {
+  const file = join(adminBrand, `connexion-${width}.webp`);
+  execFileSync(ffmpeg as unknown as string, [
+    '-hide_banner', '-v', 'error', '-y',
+    '-i', join(src, 'images/admin photo.jpg'),
+    '-vf', `scale=${width}:-2:flags=lanczos`,
+    '-c:v', 'libwebp', '-quality', '80', '-compression_level', '6',
+    file,
+  ]);
+  console.log(`✓ admin/brand/connexion-${width}.webp : ${Math.round(statSync(file).size / 1024)} Ko`);
 }

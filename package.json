@@ -8,7 +8,9 @@
   ],
   "scripts": {
     "dev:public": "npm run dev -w @celeste/public",
+    "dev:public:emu": "npm run dev -w @celeste/public -- --mode emulators",
     "dev:admin": "npm run dev -w @celeste/admin",
+    "dev:admin:emu": "npm run dev -w @celeste/admin -- --mode emulators",
     "build": "npm run build -w @celeste/public && npm run build -w @celeste/admin",
     "typecheck": "tsc -p apps/public && tsc -p apps/admin && tsc -p packages/shared",
     "lint": "eslint .",

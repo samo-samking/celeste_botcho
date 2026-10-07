@@ -40,7 +40,7 @@ Programme complet, de l'état actuel du dépôt jusqu'à la mise en ligne et au 
 | Arborescence complète (monorepo npm workspaces) | [x] |
 | Configs TypeScript strict, Vite (public multi-pages + PWA, admin SPA), ESLint | [x] |
 | `firebase.json` (2 cibles Hosting, en-têtes, émulateurs, Functions) | [x] |
-| Règles Firestore de départ + 7 index composites | [x] déployés, 26 tests verts |
+| Règles Firestore de départ + 7 index composites | [x] déployés, 27 tests verts — ⚠ règle `admins` (mise à jour de `lastLoginAt` par l'admin lui-même) ajoutée le 07/10/2026 : **à redéployer** (`npm run deploy:rules`) |
 | Projet Firebase `celestebotcho-322a5`, forfait Blaze, app web enregistrée | [x] |
 | Base Firestore créée en `africa-south1` | [x] |
 | Connexion Firebase (`services/firebase.ts`) + App Check reCAPTCHA v3 | [x] |
@@ -50,8 +50,10 @@ Programme complet, de l'état actuel du dépôt jusqu'à la mise en ligne et au 
 | Boîte d'envoi `contact@celestebotcho.com` (LWS, SMTP 465) | [x] |
 | Image OG par défaut (`apps/public/public/og/og-default.jpg`, 1200×630, 139 Ko) + couleurs de la charte | [x] |
 | Logo (`brand/logo.png`), favicon, icônes PWA 180 / 192 / 512 / maskable ; originaux rangés dans `design/` (non publié) | [x] |
+| Logo HD `brand/logo-hd.webp` (426 × 168) extrait de l'image OG, utilisé dans l'en-tête, le pied de page et l'admin ; source `design/logo-hd-source.png` | [x] |
 | Site Hosting `admin` (`celestebotcho-admin`) | [x] |
-| Code applicatif (vues, ViewModels, modèles…) | [ ] fichiers vides |
+| Code applicatif (vues, ViewModels, modèles…) | [~] fait : accueil (hero + vitrine des catégories branchée sur Firestore), bandeau cookies ; admin : connexion, coque, tableau de bord, catégories, produits ; reste : voir phases |
+| Compte propriétaire `contact@celestebotcho.com` (claim `owner`) | [x] créé le 07/10/2026 (`firebase auth:import`, mot de passe haché en bcrypt localement) ; fiche `admins/{uid}` créée à la 1re connexion ; mot de passe changé par la propriétaire |
 
 ---
 
@@ -72,7 +74,7 @@ Programme complet, de l'état actuel du dépôt jusqu'à la mise en ligne et au 
 | D9 | Nombre d'utilisateurs de l'admin | Phase 6 | 1 propriétaire |
 | D10 | Vraies photos produits en plus des affiches ? | Phase 3 / 4 | affiches recadrées |
 | D11 | Adresse qui reçoit les notifications | Phase 5 | `contact@celestebotcho.com` |
-| D12 | Logo en **SVG** ou PNG ≥ 1 024 px (le PNG actuel ne fait que 201 × 79 px) | Phase 8 (icônes nettes) | ✅ couleurs et logo en place ; icônes tirées du monogramme de l'image OG, un peu douces |
+| D12 | Logo en **SVG** ou PNG ≥ 1 024 px (le PNG actuel ne fait que 201 × 79 px) | Phase 8 (icônes nettes) | ✅ couleurs et logo en place ; logo HD extrait de l'image OG en attendant le SVG ; icônes tirées du monogramme, un peu douces |
 | D13 | Durée de conservation des coordonnées clientes | Phase 12 | 24 mois |
 | D14 | Collecter l'e-mail des clientes (facultatif) pour leur envoyer les confirmations ? | Phase 5 | oui, champ facultatif |
 
@@ -111,6 +113,8 @@ Programme complet, de l'état actuel du dépôt jusqu'à la mise en ligne et au 
 Source de vérité : [`apps/public/src/styles/tokens.css`](apps/public/src/styles/tokens.css) (copie identique dans `apps/admin`). **Aucune couleur, taille ou durée n'est écrite en dur ailleurs** : on utilise toujours une variable.
 
 > Couleurs **relevées sur l'image OG officielle** (`apps/public/public/og/og-default.jpg`) : fond chocolat presque noir, or chaud, caramel des boules Toffi. Pour tout ajustement, on modifie uniquement `tokens.css`.
+>
+> **Mise à jour du 07/10/2026 — identité de l'accueil** : fond `--bg` **`#17120a`** (relevé sur la vidéo du hero, pour qu'aucune jointure ne se voie), or `--gold` **`#f5b800`**, dégradé des titres `--title-gradient` **`#ffd95a` → `#c98a00`**, texte `--text` **`#f5efe6`**, texte secondaire `--text-muted` `#cfc5b6`. Les **rôles sémantiques pointent désormais vers ces valeurs** ; la palette chocolat ci-dessous reste disponible (statuts, illustrations). Miroir TypeScript : `apps/public/src/pages/home/config.ts` (`COLORS`).
 
 ### 4.1 Couleurs
 
@@ -137,12 +141,12 @@ Source de vérité : [`apps/public/src/styles/tokens.css`](apps/public/src/style
 
 | Token | Pointe vers | Usage |
 |---|---|---|
-| `--color-bg` | `--choco-900` | `body` |
-| `--color-surface` / `--color-surface-2` | `--choco-800` / `--choco-700` | Cartes, tiroirs, modales |
-| `--color-text` / `--color-text-muted` | `--cream-100` / `--cream-200` | Texte |
-| `--color-accent` / `--color-accent-hover` | `--gold-500` / `--gold-400` | Boutons principaux, liens |
-| `--color-on-accent` | `--choco-950` | Texte posé sur l'or |
-| `--color-price` / `--color-price-old` | `--gold-400` / crème à 60 % | Prix promo et prix barré |
+| `--color-bg` | `--bg` (`#17120a`) | `body` |
+| `--color-surface` / `--color-surface-2` | `--bg` + 8 % / 15 % d'or | Cartes, tiroirs, modales |
+| `--color-text` / `--color-text-muted` | `--text` / `--text-muted` | Texte |
+| `--color-accent` / `--color-accent-hover` | `--gold` / `--gold-light` | Boutons principaux, liens |
+| `--color-on-accent` | `--bg` | Texte posé sur l'or |
+| `--color-price` / `--color-price-old` | `--gold-light` / crème à 60 % | Prix promo et prix barré |
 | `--color-border` | or à 25 % | Bordures fines |
 | `--color-success` / `warning` / `danger` / `info` | vert / ambre / rouge / bleu | Statuts, toasts, badges |
 
@@ -150,6 +154,11 @@ Source de vérité : [`apps/public/src/styles/tokens.css`](apps/public/src/style
 
 | Combinaison | Ratio approx. | Verdict |
 |---|---|---|
+| `--text` sur `--bg` | 16,3:1 | ✅ texte courant (mesuré le 07/10/2026) |
+| `--text-muted` sur `--bg` | 10,9:1 | ✅ |
+| `--gold` sur `--bg` / `--bg` sur `--gold` | 10,4:1 | ✅ texte, prix, boutons |
+| `--gold-dark` (bas du dégradé des titres) sur `--bg` | 6,3:1 | ✅ |
+| Erreur `#ff8a80` sur `--bg` | 8,2:1 | ✅ messages d'erreur de formulaire |
 | `--cream-100` sur `--choco-900` | 18,2:1 | ✅ texte courant |
 | `--gold-500` sur `--choco-900` | 10,9:1 | ✅ texte courant et prix |
 | `--choco-950` sur `--gold-500` | 11,1:1 | ✅ texte des boutons |
@@ -171,7 +180,7 @@ Source de vérité : [`apps/public/src/styles/tokens.css`](apps/public/src/style
 | `delivered` | Livrée | `--color-success` |
 | `cancelled` | Annulée | `--color-danger` |
 
-**Admin** : même palette, mais en **thème clair** pour la lisibilité des tableaux : fond `--cream-50`, surfaces blanches, texte `--choco-900`, liens et texte d'accent `--caramel-600` ; l'or ne sert qu'en **fond** de bouton (texte `--choco-950` dessus), jamais en texte sur fond clair. À définir dans `apps/admin/src/styles/base.css` en surchargeant les rôles sémantiques.
+**Admin** : l'**écran de connexion** est en thème sombre, identique au site (07/10/2026). Pour les écrans de gestion, le thème reste à trancher en 4.1 ; la proposition initiale était : même palette, mais en **thème clair** pour la lisibilité des tableaux : fond `--cream-50`, surfaces blanches, texte `--choco-900`, liens et texte d'accent `--caramel-600` ; l'or ne sert qu'en **fond** de bouton (texte `--choco-950` dessus), jamais en texte sur fond clair. À définir dans `apps/admin/src/styles/base.css` en surchargeant les rôles sémantiques.
 
 ### 4.2 Typographie
 
@@ -211,14 +220,15 @@ Interlignage : 1,5 pour le corps, 1,15 pour les titres. Longueur de ligne max : 
 
 ### 4.4 Iconographie et images
 
-- **Icônes** : jeu maison « Trait doré », 95 SVG dans `packages/shared/src/icons/` :
-  - `interface/` (81) : grille 24, trait 1,5 px, bouts ronds, `currentColor` ;
+- **Icônes** : jeu maison « Trait doré », 96 SVG dans `packages/shared/src/icons/` :
+  - `interface/` (82, dont `cookie` ajoutée le 07/10/2026, aussi déclarée dans `design/icones/generer.py`) : grille 24, trait 1,5 px, bouts ronds, `currentColor` ;
   - `signature/` (10) : grille 48, formes pleines à pointes effilées, 2e couleur `--icon-accent` (or clair) ;
   - utilisation : `import { bag } from '@celeste/shared/icons'` puis `${icon(bag)}` (helper `icons/icon.ts`) ; `icon(close, { label: 'Fermer' })` pour un bouton sans texte ;
   - seules les icônes importées partent dans le build ; après ajout d'un SVG : `npm run icons` ;
+  - [x] correctif du 07/10/2026 : `icon()` ne retire `width`/`height` que sur la balise `<svg>` (les `<rect>` de `lock`, `mail`, `box`, `calendar`… perdaient leur taille et ne s'affichaient pas) ;
   - générateur et planche d'aperçu : `design/icones/` (non publié) ;
   - [x] `brands/` (4) : `whatsapp`, `facebook`, `tiktok`, `instagram` — glyphes officiels non modifiés (Simple Icons 16.34, CC0), une couleur, marge de 2 px via `viewBox="-2 -2 28 28"` ; planche de contrôle `design/icones/apercu-marques.html`.
-- **Logo** : `apps/*/public/brand/logo.png` (201 × 79, fond transparent), affiché à 40 px de haut maximum dans l'en-tête. Monogramme seul pour le favicon et les icônes. Originaux dans `design/`. Une version SVG (🔒 D12) remplacera le PNG.
+- **Logo** : `apps/*/public/brand/logo-hd.webp` (426 × 168, extrait de l'image OG), affiché à 52 px de haut dans l'en-tête (40 px sur mobile) ; `logo.png` (201 × 79) reste pour les usages secondaires. Monogramme seul pour le favicon et les icônes. Originaux dans `design/`. Une version SVG (🔒 D12) remplacera le PNG.
 - **Photos produit** : ratio **1:1**, fond uni chocolat ou crème, produit centré. Minimum 1 200 × 1 200 px à l'envoi.
 - **Bannières d'accueil** : ratio **16:9** sur bureau, **4:5** sur mobile (deux recadrages via Cloudinary `g_auto`).
 - **Toutes les images passent par Cloudinary** avec `f_auto,q_auto` et la largeur exacte affichée (voir annexe C). Toujours `width` / `height` dans le HTML (pas de CLS), `loading="lazy"` sauf l'image LCP (`fetchpriority="high"`).
@@ -289,7 +299,7 @@ View (lit-html + CSS) ──► ViewModel (signals) ──► Model / domain (fo
 
 ### 0.3 Scripts
 - [x] `scripts/set-admin.ts` (+ `--emulator`) : `tsx scripts/set-admin.ts <email> owner|manager` ; pose le custom claim `role` via Admin SDK, crée le document `admins/{uid}`.
-- [x] `scripts/seed.ts` : remplit l'émulateur (uniquement ; + 3 messages et 2 comptes admin de test, mot de passe `celeste-dev`) avec 3 catégories, 8 produits, `settings/public`, `settings/legal`, 2 promos, 10 commandes de test.
+- [x] `scripts/seed.ts` : remplit l'émulateur (uniquement ; + 3 messages et 2 comptes admin de test, mot de passe `celeste-dev`) avec 3 catégories (avec leur couleur de vitrine), 10 produits (photos détourées des pots), `settings/public`, `settings/legal`, 2 promos, 10 commandes de test.
 - [ ] `scripts/prerender.ts` : voir Phase 7.
 - [x] Ajouter au `package.json` racine : `"seed": "tsx scripts/seed.ts"`, `"set-admin": "tsx scripts/set-admin.ts"`, `"prerender": "tsx scripts/prerender.ts"`.
 
@@ -321,7 +331,8 @@ View (lit-html + CSS) ──► ViewModel (signals) ──► Model / domain (fo
 ### 1.1 Modèles (`src/models/`)
 Recopier les interfaces du document d'architecture (§4), avec ces **ajouts** :
 
-- [ ] `category.ts`, `product.ts` (+ `Variant`), `promotion.ts`, `settings.ts` (`PublicSettings`, `LegalSettings`), `admin.ts`, `audit-log.ts` : identiques au document.
+- [x] `category.ts` (+ **`color`** : couleur de la vitrine, ajout du 07/10/2026), `product.ts` (+ `Variant`, `MAX_VARIANTS` = 6, `MAX_IMAGES` = 8), `admin.ts`, `audit-log.ts`, `WithId<T>`.
+- [ ] `promotion.ts`, `settings.ts` (`PublicSettings`, `LegalSettings`) : identiques au document.
 - [ ] `order.ts` : ajouter `customer.email: string | null` (🔒 D14, facultatif) et `emailNotifications: boolean`.
 - [ ] `order-tracking.ts` : identique.
 - [ ] `message.ts` : ajouter `email: string | null` (facultatif) et `productId: string | null` (message envoyé depuis une fiche produit).
@@ -330,9 +341,10 @@ Recopier les interfaces du document d'architecture (§4), avec ces **ajouts** :
 - [ ] `index.ts` réexporte tout. Types utilitaires : `WithId<T> = T & { id: string }`.
 
 ### 1.2 Utilitaires (`src/utils/`)
-- [ ] `format-fcfa.ts` : `formatFcfa(2500)` → `2 500 F CFA` (espace insécable fine ` `) ; variante courte `2 500 F`.
+- [x] `format-fcfa.ts` (3 tests) : `formatFcfa(2500)` → `2 500 F CFA` (espace insécable fine ` `) ; variante courte `2 500 F`.
 - [ ] `phone.ts` : `normalizePhone('07 67 10 78 04')` → `+2250767107804` ; `formatPhone()` inverse ; `isValidCiPhone()` (10 chiffres, préfixes 01 / 05 / 07 / 25 / 27).
-- [ ] `slug.ts` : `slugify('Toffi Bassin & Fesses')` → `toffi-bassin-fesses` (accents retirés, `&` supprimé).
+- [x] `slug.ts` (2 tests) : `slugify('Toffi Bassin & Fesses')` → `toffi-bassin-fesses` (accents retirés, `&` supprimé).
+- [x] `color.ts` (5 tests) : contraste WCAG, `darkenToContrast` (teinte assombrie jusqu'à 4,5:1 avec le texte clair), `lightenToContrast` (teinte lisible en texte sur le fond sombre), palette `CATEGORY_PRESETS` (or ambré, terre cuite, vert profond, caramel, bordeaux, prune, bleu nuit, bronze), `categoryColor()`.
 - [ ] `order-number.ts` : `CB-AAMMJJ-XXXX`, 4 caractères en base 32 sans caractères ambigus (pas de `0/O/1/I/L`).
 - [ ] `hash.ts` : `trackingId(orderNumber, phone)` = SHA-256 hexadécimal de `orderNumber + '|' + phone` via `crypto.subtle`.
 - [ ] Tests unitaires pour chacun (`tests/utils/`).
@@ -354,11 +366,14 @@ Fonctions qui renvoient `{ ok: true, value } | { ok: false, errors: Record<champ
 
 - [ ] `order.validation.ts` : nom 2–80 caractères, téléphone CI valide, ville et adresse obligatoires, e-mail valide si fourni, zone existante, 1–20 articles, consentement coché.
 - [ ] `message.validation.ts` : nom, téléphone, sujet ≤ 120, corps 10–2 000, e-mail valide si fourni.
-- [ ] `product.validation.ts` : publication refusée si aucun format actif, aucune photo, `composition` ou `precautions` vides ; 1 à 6 formats ; SKU uniques ; prix entiers > 0.
-- [ ] `category.validation.ts`, `promotion.validation.ts` (`endsAt > startsAt`, `value` cohérente avec `type`, `targetIds` non vide sauf `scope: 'all'`).
+- [x] `product.validation.ts` (4 tests) : publication refusée si aucun format actif, aucune photo, `composition` ou `precautions` vides ; 1 à 6 formats ; SKU uniques ; prix entiers > 0.
+- [x] `category.validation.ts` (nom, adresse, description, couleur `#rrggbb`).
+- [ ] `promotion.validation.ts` (`endsAt > startsAt`, `value` cohérente avec `type`, `targetIds` non vide sauf `scope: 'all'`).
 
 ### 1.5 Repositories (`src/repositories/`)
 Un `withConverter` par collection (dates `Timestamp` ↔ `Date`, ajout de `id`).
+
+**Fait au 07/10/2026** : `category` (`listActive`, `listAll`, `slugTaken`, `save`, `setActive`, `reorder`, `remove` refusé si un produit, même brouillon, l'utilise), `product` (`listPublished`, `listAll`, `get`, `slugTaken`, `save` qui calcule `minPrice` / `inStock` / `categoryName` et tient `productCount` à jour, `reorder`, `remove` refusé pour un produit publié), `addAuditLog()` (création, renommage, prix, publication, archivage, suppression), `domain/catalog.ts` (4 tests : `minActivePrice`, `isInStock`, SKU auto, `publicationIssues`).
 
 | Repository | Méthodes publiques | Méthodes admin |
 |---|---|---|
@@ -372,13 +387,15 @@ Un `withConverter` par collection (dates `Timestamp` ↔ `Date`, ajout de `id`).
 | `admin` | — | `list()`, `save()`, `setActive()` |
 | `audit-log` | — | `log(action, targetPath, summary)`, `page()` |
 
-- [ ] Toute écriture admin qui modifie un prix, un statut de commande ou la configuration appelle `auditLog.log()` dans le **même batch**.
-- [ ] Dénormalisation dans le même `writeBatch` : renommer une catégorie met à jour `categoryName` de ses produits ; publier / archiver un produit met à jour `productCount`.
+- [~] Toute écriture admin qui modifie un prix, un statut de commande ou la configuration appelle `auditLog.log()` dans le **même batch** (fait pour le catalogue).
+- [x] Dénormalisation dans le même `writeBatch` : renommer une catégorie met à jour `categoryName` de ses produits ; publier / archiver un produit met à jour `productCount`.
 
 ### 1.6 Services (`src/services/`)
 - [x] `firebase.ts`, `app-check.ts`
-- [ ] `images.ts` : `cld(publicIdOrUrl, { w, h, crop })` → URL Cloudinary avec `f_auto,q_auto` ; `srcset(publicId, [320, 480, 768, 1200])` ; `uploadImage(file, folder)` vers le preset non signé ; `ogImage(...)` (Phase 7).
-- [ ] `whatsapp.ts` : interface `WhatsAppService` ; implémentation niveau 1 : `buildOrderLink(order, shopNumber)`, `buildProductLink(product, variant, shopNumber)`, `buildCustomerLink(order)` (admin → cliente), `buildContactLink(shopNumber, text?)`.
+- [x] `images.ts` (fait : `cld(url, transformation)`, `compressImage` 1 600 px WebP, `uploadImage` avec progression ; reste `srcset`, `ogImage`) : `cld(publicIdOrUrl, { w, h, crop })` → URL Cloudinary avec `f_auto,q_auto` ; `srcset(publicId, [320, 480, 768, 1200])` ; `uploadImage(file, folder)` vers le preset non signé ; `ogImage(...)` (Phase 7).
+- [x] `auth.service.ts` (07/10/2026) : `signInAdmin`, `resolveAdminSession` (claim `role` + `admins/{uid}.isActive`, sinon déconnexion), `lastLoginAt`, `requestPasswordReset` (ne révèle pas si le compte existe), `watchAuthUser`, erreurs typées `AuthError`.
+- [x] `app-check.ts` : désactivé avec les émulateurs (ils ne vérifient pas App Check ; évitait des erreurs 403 en local).
+- [~] `whatsapp.ts` : `buildContactLink(shopNumber, text?)` fait (5 tests) ; reste l'interface `WhatsAppService` ; implémentation niveau 1 : `buildOrderLink(order, shopNumber)`, `buildProductLink(product, variant, shopNumber)`, `buildCustomerLink(order)` (admin → cliente), `buildContactLink(shopNumber, text?)`.
 - [ ] Tests de `whatsapp.ts` : encodage des caractères spéciaux, sauts de ligne, emoji.
 
 **Livrable** : `npm test` vert, couverture du dossier `domain/` ≥ 90 %.
@@ -391,7 +408,7 @@ Un `withConverter` par collection (dates `Timestamp` ↔ `Date`, ajout de `id`).
 **Durée** : 3 jours.
 
 ### 2.1 Styles globaux
-- [ ] `base.css` : reset moderne, `color-scheme: dark`, `body` (fond, police, taille), titres, liens, `:focus-visible`, `.container`, `.visually-hidden`, `.skip-link`.
+- [x] `base.css` (+ boutons `.btn`, titres `.title-gold`) : reset moderne, `color-scheme: dark`, `body` (fond, police, taille), titres, liens, `:focus-visible`, `.container`, `.visually-hidden`, `.skip-link`.
 - [ ] `animations.css` : `@keyframes` shimmer, pop (badge panier), slide-in (tiroir), fade-up ; classe `.reveal` (apparition au défilement via `animation-timeline: view()` avec repli `IntersectionObserver`) ; règles `@view-transition { navigation: auto; }` et noms de transitions pour l'image produit (catalogue → fiche).
 - [ ] Toutes les animations désactivées sous `prefers-reduced-motion`.
 
@@ -407,14 +424,18 @@ Un `withConverter` par collection (dates `Timestamp` ↔ `Date`, ajout de `id`).
 | `skeleton` | `skeletonCard()`, `skeletonGrid(n)`, `skeletonText(lines)` | Mêmes dimensions que le contenu final |
 | `icons.ts` | SVG des icônes utilisées | |
 | `toast` | Notifications (ajout au panier, erreur réseau) | `role="status"` |
+| `cookie-banner` ✅ | Bandeau de consentement : « Tout refuser » / « Tout accepter » (même poids), « Personnaliser » (indispensables toujours actifs, mesure d'audience) | Cookie first-party `cb_consent` (6 mois, `SameSite=Lax`, `Secure` en HTTPS) ; rouvrable par tout élément `[data-cookie-settings]` (lien du pied de page) ; non modal |
+
+**Fait au 07/10/2026** : `site-header` (logo HD, menu en capitales espacées avec losanges et filet or, entrée de la section affichée soulignée, bouton WhatsApp compact à la fin du hero), `site-footer` (téléphones, réseaux si renseignés, mention santé, « Gérer les cookies » ; liens légaux à ajouter avec les pages), `product-card` (version accueil : photo, nom, format, prix, commande WhatsApp ; ajout au panier à faire), `cookie-banner`. Reste : `cart-drawer`, `whatsapp-fab`, `promo-countdown`, `skeleton`, `toast`.
 
 ### 2.3 Stores partagés entre pages
 - [ ] `cart.store.ts` : signal `items` persisté dans `localStorage` (clé `cb-cart-v1`, version pour migrer plus tard) ; `add`, `remove`, `setQty`, `clear`, `count` (computed) ; synchronisation entre onglets via l'évènement `storage`. Le panier ne stocke que `productId`, `sku`, `qty` : prix et noms sont **toujours relus du catalogue** (règle « le prix vient du catalogue »).
 - [ ] `settings.store.ts` : charge `settings/public` une fois par visite (cache Firestore + `sessionStorage`).
+- [x] `consent.store.ts` : consentement cookies (signal `consent`, `saveConsent`, `onAnalyticsConsent(start)` pour ne charger la mesure d'audience qu'après accord). Changer `CONSENT_VERSION` redemande le choix à tous.
 
 ### 2.4 `main.ts` et gabarit HTML commun
 - [ ] Chaque page HTML contient : `lang="fr"`, balises SEO (Phase 7), lien « Aller au contenu », `<header>`, `<main id="main">`, `<footer>`, et un script d'entrée qui monte la page correspondante.
-- [ ] `main.ts` : monte en-tête, pied de page, tiroir panier et bouton WhatsApp, puis importe dynamiquement la page (`import('./pages/catalog/catalog.view')`) pour découper le JavaScript par page.
+- [~] `main.ts` : styles globaux + bandeau cookies faits ; reste : monter en-tête, pied de page, tiroir panier et bouton WhatsApp, puis importe dynamiquement la page (`import('./pages/catalog/catalog.view')`) pour découper le JavaScript par page.
 
 **Livrable** : une page de démonstration affiche tous les composants, sur 360 px et 1 280 px.
 
@@ -425,7 +446,21 @@ Un `withConverter` par collection (dates `Timestamp` ↔ `Date`, ajout de `id`).
 **Durée** : 6 à 7 jours. Pour chaque page : View + ViewModel + CSS + test du ViewModel.
 
 ### 3.1 Accueil (`index.html`, `pages/home/`)
-**Sections, dans l'ordre**
+
+**Réalisé le 07/10/2026** (vérifié sur Chrome desktop 1 440 px, mobile 390 px, `prefers-reduced-motion`, clavier) :
+- [x] **Hero piloté par le défilement** (`pages/home/hero/`) : section de 450vh (350vh mobile), cadre `sticky` de 100vh/100svh, canvas « cover » (gestion `devicePixelRatio`, redimensionnement) ; image `Math.round(p × (n − 1))` dessinée dans `requestAnimationFrame` ; remonter rejoue à l'envers ; 1re image préchargée, les autres en arrière-plan (de grossier à fin) ; dernière image gardée tant que la suivante n'est pas prête.
+- [x] Images : 114 WebP 1 280 × 720 (desktop, 1,6 Mo) et 57 WebP 540 × 720 recadrées au centre (mobile, 452 Ko, sans le cube de faux produits), générées par `npm run hero-assets` (ffmpeg fourni par `ffmpeg-static`).
+- [x] Raccord du fond (dégradés de `--bg` sur les bords) ; masque du cube **calé sur l'image dessinée** (66 % → 74 % de sa largeur), donc juste quel que soit le format d'écran.
+- [x] 5 blocs de texte réversibles (tableau `HERO_BLOCKS` dans `config.ts`), 3 vrais pots (WebP détourés, ligne dorée, ombre, reflet) entre p 0,45 et 0,58, indicateur de progression (rail or + losange par séquence + compteur), (mention « Image d'illustration générée… » retirée le 07/10/2026 à la demande de la propriétaire).
+- [x] **Vitrine des catégories** (`pages/home/vitrine/`, remplace la grille provisoire « Nos produits », ancre `#produits`) : une section d'un écran, une catégorie et un produit à la fois ; relais entre produits (le produit actif s'envole, la vignette du suivant grandit), changement de catégorie (sortie échelonnée par le haut, entrée par le bas, fond qui fond vers la couleur de la catégorie via `@property --tint`) ; onglets `tablist`, flèches, touches ← → et 1–3, balayage au doigt, annonce `aria-live`, fondu de 200 ms sans animation. Données Firestore (catégories visibles + produits publiés, une catégorie sans produit est masquée), chargées par import dynamique à l'approche de la section (le hero reste à 16 Ko gzip). Vignette du suivant placée à 72 % / 58 % de la scène (les 170 % / 75 % du cahier la mettaient hors écran).
+- [x] « Comment commander » (3 étapes), pied de page.
+- [x] Sans animation : image fixe de face (`frame_0085` desktop / `frame_0043` mobile), blocs dans le flux. Clavier : un lien d'un bloc masqué fait défiler jusqu'à lui.
+- [x] Produits lus dans Firestore (vitrine).
+- [ ] Numéro WhatsApp / téléphones / réseaux depuis `settings/public` (encore dans `config.ts`).
+- [ ] Page `/catalogue/<adresse>` (lien « Voir toute la catégorie » de la vitrine) : à créer avec la Phase 3.2, plus la réécriture Hosting. ⚠ Prix et correspondance photo ↔ format **provisoires** (🔒 D1, D3).
+- [ ] Sections restantes de la liste ci-dessous (promo + compte à rebours, catégories, engagements, zones de livraison, FAQ) à intégrer sous le hero.
+
+**Sections prévues à l'origine** (le carrousel est remplacé par le hero)
 1. Carrousel (`settings.heroSlides`) — défilement automatique 5 s, pause au toucher et au survol, points de navigation, glissement tactile ; première image en `fetchpriority="high"` (c'est l'image LCP).
 2. Bandeau promo actif + compte à rebours (si une promo sans code est active).
 3. Catégories (cartes avec image de couverture) → `catalogue?categorie=<slug>`.
@@ -500,27 +535,37 @@ Une seule page, 3 blocs visibles en même temps sur mobile (objectif : commande 
 **Durée** : 5 jours.
 
 ### 4.1 Coque de l'admin
-- [ ] `router.ts` : routes en hash ou History API (la réécriture `**` → `index.html` est déjà dans `firebase.json`).
-- [ ] `auth.guard.ts` : redirige vers `/connexion` si non connecté ; vérifie le claim `role` (`getIdTokenResult`) ; un compte sans rôle ou `isActive: false` est déconnecté avec un message.
-- [ ] `shell.view.ts` : menu latéral (repliable sur mobile), en-tête (nom, rôle, déconnexion), zone de contenu. Les entrées réservées au propriétaire (Configuration, Comptes admin, Journal) sont **masquées** pour un gestionnaire (et de toute façon bloquées par les règles).
-- [ ] Composants : `data-table` (tri, pagination par curseur, sélection), `form-field`, `modal` (confirmation), `toast`, `image-uploader` (glisser-déposer, aperçu, compression côté navigateur à 1 600 px max avant envoi, barre de progression, réordonnancement).
+- [x] `router.ts` (07/10/2026) : History API, liens `[data-link]` sans rechargement ; routes `/connexion` et `/` (la réécriture `**` → `index.html` est déjà dans `firebase.json`).
+- [x] `auth.guard.ts` (07/10/2026) : redirige vers `/connexion` si non connecté (et de `/connexion` vers `/` si connecté) ; vérifie le claim `role` (`getIdTokenResult`) ; un compte sans rôle ou `isActive: false` est déconnecté avec un message.
+- [x] `shell.view.ts` (07/10/2026) : menu latéral (Pilotage, Catalogue, Ventes, Administration ; écrans à venir marqués « Bientôt »), panneau coulissant sur mobile (Échap, clic sur le fond), compte, « Voir la boutique », déconnexion, focus sur le titre à chaque écran.
+- [x] Tableau de bord : produits publiés, brouillons, ruptures, catégories actives ; guide « Pour bien démarrer » en 3 étapes tant que le catalogue est vide ; raccourcis `?nouveau`.
+- [x] Thème : **sombre** dans tout l'admin (pas de réponse sur le thème clair ; modifiable par les tokens). Les entrées réservées au propriétaire (Configuration, Comptes admin, Journal) sont **masquées** pour un gestionnaire (et de toute façon bloquées par les règles).
+- [x] `form-field` (libellé, icône, bouton à droite, erreur liée par `aria-describedby`).
+- [x] Composants : `form-field` (+ zone de texte, compteur, préfixe, interrupteur, **choix de couleur**), `modal` (confirmation, **panneau latéral** avec fermeture animée et « Abandonner les modifications ? »), `toast`, `image-uploader` (glisser-déposer, aperçu, compression, progression, ordre, texte alternatif).
+- [ ] `data-table` (tri, pagination par curseur, sélection) : pour les commandes (Phase 6).
 
 ### 4.2 Connexion (`features/auth`)
-- [ ] E-mail + mot de passe, « mot de passe oublié » (e-mail Firebase), message d'erreur générique, limite visuelle après 5 échecs.
-- [ ] Mise à jour de `admins/{uid}.lastLoginAt`.
+- [x] E-mail + mot de passe, « mot de passe oublié » (e-mail Firebase), message d'erreur générique, limite visuelle après 5 échecs (bouton bloqué 30 s avec décompte).
+- [x] Mise à jour de `admins/{uid}.lastLoginAt` (nouvelle règle : l'admin ne modifie que ce champ de sa propre fiche, à l'heure du serveur ; 1 test).
+- [x] Compte sans rôle ou désactivé : déconnecté avec message ; session conservée au rechargement ; afficher / masquer le mot de passe ; champs en 16 px (pas de zoom iOS).
+- [x] Testé de bout en bout sur les émulateurs (11 étapes) : `npm run emulators`, `npm run seed`, puis `npm run dev:admin:emu` → http://localhost:5174 avec `proprietaire@celeste.test` / `celeste-dev`.
+- [x] En production : compte de la propriétaire créé (voir §1), illustration à gauche de l'écran de connexion (`brand/connexion-*.webp`).
+- [ ] Redéployer les règles (`lastLoginAt`) ; personnaliser le modèle d'e-mail « réinitialisation du mot de passe » (console › Authentication › Modèles, en français).
 
 ### 4.3 Catégories
-- [ ] Liste réordonnable par glisser-déposer (souris et tactile ; boutons ↑ ↓ pour le clavier), activer / désactiver, image de couverture.
-- [ ] Formulaire : nom (slug généré, modifiable), description, image.
-- [ ] Suppression refusée si la catégorie contient des produits (proposer la désactivation).
+- [x] Liste réordonnable (glisser-déposer à la souris ; boutons ↑ ↓ pour le clavier et le tactile), activer / masquer, image de couverture, pastille de couleur.
+- [x] Formulaire en panneau latéral : nom (slug généré, modifiable), description, image Cloudinary, **couleur de la vitrine** (8 teintes proposées, couleur libre, aperçu et contraste mesuré).
+- [x] Suppression refusée si la catégorie contient des produits (proposer la désactivation).
+- [x] Testé sur les émulateurs : création avec envoi Cloudinary réel, adresse en double refusée, ordre conservé, renommage répercuté, suppression refusée puis acceptée.
 
 ### 4.4 Produits
-- [ ] Liste filtrable (catégorie, statut, rupture), recherche, aperçu de l'image.
-- [ ] Formulaire en sections : Informations, Photos (1–8), Formats (1–6 lignes : libellé, quantité, prix, stock, actif, SKU auto `TOF-BF-030`), Contenu (description courte, description, **composition**, **mode d'emploi**, **précautions** — obligatoires pour publier), Mise en avant (vedette, ordre), SEO (titre ≤ 60 caractères, description ≤ 155, avec compteur et aperçu Google / WhatsApp).
-- [ ] Statut brouillon / publié / archivé ; bouton « Publier » désactivé avec la liste des manques (règle de gestion).
-- [ ] Calcul automatique de `minPrice`, `inStock`, `categoryName`, `slug`.
-- [ ] Bouton « Voir sur le site ».
-- [ ] Journalisation : changement de prix (`prix 30 boules : 3000 → 2500`), publication, archivage.
+- [x] Liste filtrable (catégorie, onglets de statut avec compteurs, rupture), recherche sans accents (nom, catégorie, SKU), aperçu de l'image, actions rapides (publier, retirer, archiver, restaurer, ordre, supprimer).
+- [x] Formulaire en sections (panneau latéral large avec sommaire) : Informations, Photos (1–8), Formats (1–6 lignes : libellé, quantité, prix, stock, actif, SKU auto `TOF-BF-030`), Contenu (description courte, description, **composition**, **mode d'emploi**, **précautions** — obligatoires pour publier), Mise en avant (vedette, ordre), SEO (titre ≤ 60 caractères, description ≤ 155, avec compteur et aperçu Google / WhatsApp).
+- [x] Statut brouillon / publié / archivé ; bouton « Publier » désactivé avec la liste des manques (règle de gestion).
+- [x] Calcul automatique de `minPrice`, `inStock`, `categoryName`, `slug` (+ quantité déduite du libellé « 30 boules »).
+- [ ] Bouton « Voir sur le site » (quand la fiche produit publique existera, Phase 3.3).
+- [x] Journalisation : changement de prix (`prix 30 boules : 3000 → 2500`), publication, archivage.
+- [x] Testé sur les émulateurs (9 étapes) : brouillon, photo Cloudinary, publication, changement de prix journalisé, filtres, refus de publier un produit incomplet, retirer / archiver / restaurer / supprimer, confirmation avant d'abandonner.
 - [ ] 🔒 D1, D3, D4, D7 avant la saisie réelle du catalogue.
 
 ### 4.5 Configuration (propriétaire)
@@ -827,7 +872,8 @@ Les robots de WhatsApp et Facebook n'exécutent pas le JavaScript : les balises 
 - [ ] E-mail cliente facultatif, utilisé uniquement pour le suivi de la commande.
 - [ ] Purge des coordonnées après 🔒 D13 (24 mois proposés) : lot 1–2, bouton admin « Anonymiser les commandes anciennes » ; lot 3, fonction planifiée mensuelle.
 - [ ] Demande de suppression d'une cliente : procédure dans l'admin (anonymiser ses commandes).
-- [ ] Pas de traceur publicitaire ni d'analytics avec cookies au lancement → pas de bannière cookies nécessaire. Si un outil de mesure est ajouté plus tard, préférer une solution sans cookies.
+- [x] Bandeau de consentement aux cookies (07/10/2026) : refus aussi simple que l'acceptation, choix conservé 6 mois dans `cb_consent`, modifiable depuis le pied de page (« Gérer les cookies »). Aucun traceur publicitaire.
+- [ ] Mesure d'audience : ne la charger que via `onAnalyticsConsent()` ; la décrire dans la politique de confidentialité (outil, finalité, durée) et ajouter le lien « En savoir plus » dans le bandeau quand la page existera.
 - [ ] 🔒 D8 : déclaration ARTCI par la vendeuse.
 
 ---
@@ -935,6 +981,10 @@ Développeur seul à temps partiel. Les lots correspondent au cahier des charges
 ```bash
 npm run dev:public                 # site public  → http://localhost:5173
 npm run dev:admin                  # admin        → http://localhost:5174
+npm run dev:admin:emu              # admin branché sur les émulateurs (après npm run seed)
+npm run dev:public:emu             # site public branché sur les émulateurs (vitrine du jeu d'essai)
+npm run hero-assets                # régénère les images du hero et des pots (ffmpeg)
+npm run icons                      # réindexe la bibliothèque d'icônes après ajout d'un SVG
 npm run emulators                  # émulateurs   → http://localhost:4000
 npm run seed                       # jeu d'essai
 npm run set-admin -- email owner   # donner un rôle admin

@@ -113,6 +113,8 @@ a {
   padding: var(--space-3) var(--space-5);
   border: 1px solid transparent;
   border-radius: var(--radius-full);
+  background: transparent; /* pas le fond gris par défaut des <button> */
+  color: inherit;
   font: 600 var(--fs-md) / 1.2 var(--font-body);
   text-decoration: none;
   cursor: pointer;

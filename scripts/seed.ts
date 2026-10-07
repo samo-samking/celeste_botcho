@@ -1,5 +1,5 @@
 // Jeu d'essai pour les émulateurs : vide la base et l'Auth, puis crée
-// 3 catégories, 8 produits, settings/public, settings/legal, 2 promos, 10 commandes
+// 3 catégories, 10 produits, settings/public, settings/legal, 2 promos, 10 commandes
 // (+ leur orderTracking), 3 messages et 2 comptes admin de test.
 // Usage : npm run emulators   (dans un autre terminal)  puis  npm run seed
 //
@@ -42,10 +42,12 @@ for (const a of ADMINS) {
 
 // --- 2. Catégories
 const CATEGORIES = [
-  { id: 'cat-bassin-fesses', name: 'Toffi Bassin & Fesses', slug: 'toffi-bassin-fesses' },
-  { id: 'cat-grossissant', name: 'Toffi Grossissant Corps', slug: 'toffi-grossissant-corps' },
-  { id: 'cat-soins', name: 'Soins & gamme spécifique', slug: 'soins-gamme-specifique' },
+  { id: 'cat-bassin-fesses', name: 'Toffi Bassin & Fesses', slug: 'toffi-bassin-fesses', color: '#b8860b' },
+  { id: 'cat-grossissant', name: 'Toffi Grossissant Corps', slug: 'toffi-grossissant-corps', color: '#a0452e' },
+  { id: 'cat-soins', name: 'Soins & gamme spécifique', slug: 'soins-gamme-specifique', color: '#2f6b4f' },
 ];
+// photos détourées servies par le site public (test) : la vitrine les affiche en « contain »
+const POTS = ['/produits/pot-rose.webp', '/produits/pot-bas.webp', '/produits/pot-blanc.webp'];
 
 // --- 3. Produits
 type Variant = { sku: string; label: string; quantity: number; price: number; stock: number | null; isActive: boolean };
@@ -64,6 +66,8 @@ const PRODUCTS: {
 }[] = [
   { id: 'prod-toffi-bf', name: 'Toffi Bassin & Fesses', slug: 'toffi-bassin-fesses', categoryId: 'cat-bassin-fesses', variants: toffiVariants('BF'), status: 'published', isFeatured: true },
   { id: 'prod-toffi-gc', name: 'Toffi Grossissant Corps', slug: 'toffi-grossissant-corps', categoryId: 'cat-grossissant', variants: toffiVariants('GC'), status: 'published', isFeatured: true },
+  { id: 'prod-toffi-bf-cure', name: 'Cure Bassin & Fesses (test)', slug: 'cure-bassin-fesses', categoryId: 'cat-bassin-fesses', variants: single('TOF-CBF-001', 'Coffret 3 pots', 15000), status: 'published', isFeatured: false },
+  { id: 'prod-toffi-gc-cure', name: 'Cure Grossissant (test)', slug: 'cure-grossissant', categoryId: 'cat-grossissant', variants: single('TOF-CGC-001', 'Coffret 3 pots', 15000), status: 'published', isFeatured: false },
   { id: 'prod-sirop', name: 'Sirop ventre plat', slug: 'sirop-ventre-plat', categoryId: 'cat-soins', variants: single('SOI-SVP-001', 'Flacon', 5000), status: 'published', isFeatured: false },
   { id: 'prod-creme-rep', name: 'Crème réparatrice', slug: 'creme-reparatrice', categoryId: 'cat-soins', variants: single('SOI-CRP-001', 'Pot', 3500), status: 'published', isFeatured: false },
   { id: 'prod-creme-ron', name: 'Crème rondeur', slug: 'creme-rondeur', categoryId: 'cat-soins', variants: single('SOI-CRO-001', 'Pot', 4500), status: 'published', isFeatured: false },
@@ -85,7 +89,7 @@ PRODUCTS.forEach((p, i) => {
     composition: p.status === 'published' ? 'Composition de test (🔒 D7).' : '',
     usage: 'Mode d\'emploi de test.',
     precautions: p.status === 'published' ? 'Précautions de test (🔒 D7).' : '',
-    images: p.status === 'published' ? [{ ...IMG, alt: p.name }] : [],
+    images: p.status === 'published' ? [{ url: POTS[i % POTS.length]!, width: 560, height: 560, alt: `Pot de ${p.name}` }] : [],
     variants: p.variants,
     minPrice: active.length ? Math.min(...active.map((v) => v.price)) : 0,
     status: p.status,
@@ -103,7 +107,8 @@ CATEGORIES.forEach((c, i) => {
     name: c.name,
     slug: c.slug,
     description: `Catégorie ${c.name}.`,
-    imageUrl: IMG.url,
+    imageUrl: '', // l'image de couverture s'ajoute depuis l'admin (Cloudinary)
+    color: c.color,
     sortOrder: i,
     isActive: true,
     productCount: PRODUCTS.filter((p) => p.categoryId === c.id && p.status === 'published').length,
