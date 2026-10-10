@@ -156,3 +156,17 @@ a {
   inline-size: auto;
   block-size: auto;
 }
+
+/* Remplissage automatique du navigateur (Chrome, Edge, Safari) : on garde la fonction, mais pas son
+   fond gris-bleu ; le champ garde les couleurs du site. Le fond est « peint » par une ombre
+   intérieure, la seule chose que le navigateur laisse modifier. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--text);
+  caret-color: var(--text);
+  box-shadow: 0 0 0 1000px color-mix(in srgb, var(--bg) 70%, black) inset;
+  transition: background-color 600000s 0s; /* empêche le navigateur de remettre sa couleur */
+}

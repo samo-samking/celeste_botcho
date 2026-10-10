@@ -41,6 +41,33 @@
             }
           ]
         }
+      ],
+      "redirects": [
+        {
+          "source": "/catalogue{,/**}",
+          "destination": "/#produits",
+          "type": 302
+        },
+        {
+          "source": "/produit{,/**}",
+          "destination": "/#produits",
+          "type": 302
+        },
+        {
+          "source": "/commande",
+          "destination": "/",
+          "type": 302
+        },
+        {
+          "source": "/contact",
+          "destination": "/#contact",
+          "type": 302
+        },
+        {
+          "source": "/suivi",
+          "destination": "/",
+          "type": 302
+        }
       ]
     },
     {

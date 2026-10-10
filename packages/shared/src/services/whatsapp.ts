@@ -6,3 +6,8 @@ export function buildContactLink(shopNumber: string, text?: string): string {
   const base = `https://wa.me/${shopNumber.replace(/\D/g, '')}`;
   return text ? `${base}?text=${encodeURIComponent(text)}` : base;
 }
+
+/** Lien pour écrire à une cliente depuis l'admin. `phone` au format +225XXXXXXXXXX. */
+export function buildCustomerLink(phone: string, text?: string): string {
+  return buildContactLink(phone, text);
+}

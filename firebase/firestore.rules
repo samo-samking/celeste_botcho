@@ -65,6 +65,16 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLoginAt'])
         && request.resource.data.lastLoginAt == request.time;
     }
+    // appareils qui reçoivent les notifications push (jeton FCM = identifiant du document) :
+    // chaque admin gère les siens ; la lecture de la liste est réservée au serveur (Admin SDK)
+    match /pushTokens/{token} {
+      allow create, update: if isAdmin()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'label', 'createdAt'])
+        && request.resource.data.createdAt == request.time;
+      allow get, delete: if isAdmin() && resource.data.uid == request.auth.uid;
+      allow list: if false;
+    }
     match /auditLogs/{id} {
       allow create: if isAdmin();
       allow read: if isOwner();

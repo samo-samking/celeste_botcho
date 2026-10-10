@@ -76,3 +76,8 @@
 .toast__close:hover {
   color: var(--color-text);
 }
+
+/* dans un panneau ouvert : en haut, pour ne pas couvrir les boutons Enregistrer / Publier */
+dialog .toasts {
+  inset-block: calc(var(--space-5) + env(safe-area-inset-top)) auto;
+}

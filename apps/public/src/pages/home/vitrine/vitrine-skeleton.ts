@@ -7,10 +7,14 @@ export function vitrineSkeleton() {
       <h2 class="visually-hidden" id="vitrine-title">Nos produits par catégorie</h2>
       <div class="vitrine__tabs">${[0, 1, 2].map(() => html`<span class="sk sk--tab"></span>`)}</div>
       <div class="vitrine__copy">
-        <span class="sk sk--line sk--short"></span><span class="sk sk--title"></span>
+        <span class="sk sk--title"></span>
         <span class="sk sk--line"></span><span class="sk sk--line sk--short"></span>
       </div>
       <div class="vitrine__stage"><span class="sk sk--disc"></span></div>
+      <div class="vitrine__card">
+        <span class="sk sk--line"></span><span class="sk sk--line sk--short"></span>
+        <span class="sk sk--line"></span>
+      </div>
       <span class="visually-hidden" role="status">Chargement des produits…</span>
     </div>
   `;

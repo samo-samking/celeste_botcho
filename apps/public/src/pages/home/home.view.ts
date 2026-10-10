@@ -6,12 +6,23 @@ import '../../components/site-header/site-header.css';
 import './vitrine/vitrine.css';
 import '../../components/cart-drawer/cart-drawer.css';
 import '../../components/site-footer/site-footer.css';
+import '../../components/faq/faq.css';
+import '../../components/legal-dialog/legal-dialog.css';
 
 import { html, render } from 'lit-html';
+import { icon } from '@celeste/shared/icons/icon';
+import { bag, whatsapp } from '@celeste/shared/icons';
 import { siteHeader, setHeaderState, trackSections } from '../../components/site-header/site-header';
 import { initCart } from '../../components/cart-drawer/cart-entry';
 import { siteFooter } from '../../components/site-footer/site-footer';
-import { CONTACT_EMAIL, HERO, HERO_BLOCKS, HERO_PRODUCTS, ORDER_STEPS, PHONES, SOCIALS } from './config';
+import { faqSection } from '../../components/faq/faq';
+import { watchLegalHash } from '../../components/legal-dialog/legal-dialog';
+import { mountLottie } from '../../components/lottie/lottie-player';
+import contactBubbleUrl from '@celeste/shared/lotties/contact-bubble.json?url';
+import { HERO, HERO_BLOCKS, HERO_PRODUCTS, ORDER_STEPS, WHATSAPP_MESSAGES } from './config';
+import { buildContactLink } from '@celeste/shared/services/whatsapp';
+import { effect } from '@preact/signals-core';
+import { siteContact } from '../../stores/settings.store';
 import { HomeViewModel } from './home.viewmodel';
 import { initHero } from './hero/hero';
 import { createHeroText, heroTextTemplate } from './hero/hero-text';
@@ -71,7 +82,10 @@ const stepsTemplate = () => html`
           `,
         )}
       </ol>
-      <a class="btn btn--primary steps__cta" href=${vm.whatsappHref} target="_blank" rel="noopener">Commander sur WhatsApp</a>
+      <div class="steps__ctas">
+        <a class="btn btn--primary" href="#produits">${icon(bag)} Commander sur le site</a>
+        <a class="btn btn--secondary" href=${vm.whatsappHref} target="_blank" rel="noopener">${icon(whatsapp)} Commander sur WhatsApp</a>
+      </div>
     </div>
   </section>
 `;
@@ -82,11 +96,38 @@ render(
   html`
     <a class="skip-link" href="#produits">Aller aux produits</a>
     ${siteHeader(NAV, vm.whatsappHref)}
-    <main>${heroTemplate()} ${vitrineTemplate()} ${stepsTemplate()}</main>
-    ${siteFooter({ phones: PHONES, email: CONTACT_EMAIL, whatsappHref: vm.whatsappHref, socials: SOCIALS })}
+    <main>${heroTemplate()} ${vitrineTemplate()} ${stepsTemplate()}<div class="faq-slot"></div></main>
+    <div class="footer-slot"></div>
   `,
   app,
 );
+
+// FAQ et pied de page : contenus de la Configuration (mis à jour quand ils arrivent)
+const footerSlot = app.querySelector<HTMLElement>('.footer-slot')!;
+const faqSlot = app.querySelector<HTMLElement>('.faq-slot')!;
+effect(() => {
+  const c = siteContact.value;
+  const whatsappHref = buildContactLink(c.whatsappNumber, WHATSAPP_MESSAGES.general);
+  render(faqSection(c.faq), faqSlot);
+  render(
+    siteFooter({
+      phones: c.phones,
+      email: c.contactEmail,
+      whatsappHref,
+      whatsappPhone: `+${c.whatsappNumber}`,
+      socials: c.socials,
+      businessHours: c.businessHours,
+      slogan: c.slogan,
+    }),
+    footerSlot,
+  );
+});
+// bulle animée du bandeau WhatsApp : montée une fois (le pied de page est redessiné sur place),
+// jouée seulement quand elle est à l'écran ; image fixe si les animations sont réduites
+const bubble = footerSlot.querySelector<HTMLElement>('.footer-cta__visual');
+if (bubble) void mountLottie(bubble, contactBubbleUrl, { stillFrame: 30 });
+// textes légaux : adresse directe (#cgv, #mentions-legales, #confidentialite)
+watchLegalHash(() => siteContact.value.contactEmail);
 
 // La vitrine (et le SDK Firebase) ne se charge qu'à l'approche de la section : le hero reste léger.
 const vitrineEl = app.querySelector<HTMLElement>('.vitrine')!;
@@ -100,6 +141,12 @@ const vitrineObserver = new IntersectionObserver(
   { rootMargin: '800px 0px' },
 );
 vitrineObserver.observe(vitrineEl);
+// Le catalogue se charge pendant que la cliente regarde le hero :
+// il est prêt quand elle arrive à la vitrine (sinon : protection anti-robots + Firestore ≈ 4 s d'attente).
+const prefetchCatalog = () => void import('../../stores/catalog.store').then((m) => m.loadCatalog()).catch(() => undefined);
+// dès la fin du chargement de la page (attendre le repos serait trop tard : l'animation du hero l'occupe)
+if (document.readyState === 'complete') prefetchCatalog();
+else window.addEventListener('load', prefetchCatalog, { once: true });
 
 // --- Animation du hero (le DOM ci-dessus est rendu une seule fois)
 const header = app.querySelector<HTMLElement>('.site-header')!;

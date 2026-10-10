@@ -9,6 +9,7 @@ import {
   archive,
   chevronDown,
   chevronUp,
+  copy,
   edit,
   eye,
   eyeOff,
@@ -137,6 +138,7 @@ export function productsPage(): Page {
                   `
                 : nothing}
               ${iconBtn(edit, `Modifier « ${p.name} »`, () => openProductForm(vm, p))}
+              ${iconBtn(copy, `Dupliquer « ${p.name} »`, () => openProductForm(vm, undefined, p))}
               ${p.status !== 'published' ? iconBtn(trash, `Supprimer « ${p.name} »`, () => removeProduct(p), { danger: true }) : nothing}
             </div>
           </li>

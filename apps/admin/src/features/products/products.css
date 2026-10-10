@@ -401,6 +401,74 @@
   display: flex;
   align-self: end;
 }
+/* photo du format : vignettes des photos du produit */
+.vr__photos {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block-start: var(--space-2);
+  border-block-start: 1px dashed color-mix(in srgb, var(--text) 12%, transparent);
+}
+.vr__photos-label {
+  margin-inline-end: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.vr__photo {
+  display: grid;
+  place-items: center;
+  inline-size: 48px;
+  block-size: 48px;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid color-mix(in srgb, var(--text) 14%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--bg) 70%, black);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: border-color 150ms, transform 150ms;
+}
+.vr__photo img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+.vr__photo--none {
+  inline-size: auto;
+  padding-inline: var(--space-3);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+.vr__photo:hover {
+  border-color: color-mix(in srgb, var(--gold) 50%, transparent);
+}
+.vr__photo.is-selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgb(245 184 0 / 0.2);
+  color: var(--gold-light);
+}
+.vr__photo:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.pf-suggest {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-block-end: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid rgb(245 184 0 / 0.35);
+  border-radius: var(--radius-md);
+  background: rgb(245 184 0 / 0.07);
+  color: var(--gold-light);
+  font-size: var(--fs-sm);
+}
+
 @media (max-width: 719.98px) {
   .vr {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -460,4 +528,30 @@
   background: color-mix(in srgb, var(--color-danger) 12%, transparent);
   color: #ffd5d1;
   outline: none;
+}
+
+/* récapitulatif des erreurs (au-dessus des boutons) */
+.form-error > div {
+  display: grid;
+  gap: var(--space-1);
+}
+.form-error ul {
+  margin: var(--space-1) 0 0;
+  padding-inline-start: var(--space-5);
+}
+.form-error li + li {
+  margin-block-start: 2px;
+}
+.form-error a {
+  color: #fff3f1;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.form-error a:hover {
+  color: var(--gold-light);
+}
+/* « Publier » alors qu'il manque quelque chose : cliquable (il explique ce qui manque), mais atténué */
+.btn--primary.is-incomplete {
+  opacity: 0.7;
 }

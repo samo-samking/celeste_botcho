@@ -15,6 +15,8 @@ export interface Variant {
   price: number; // FCFA, entier
   stock: number | null; // null = stock non suivi
   isActive: boolean;
+  /** URL d'une des photos du produit, montrée quand la cliente choisit ce format (absent = photo principale). */
+  image?: string | null;
 }
 
 export interface Product {

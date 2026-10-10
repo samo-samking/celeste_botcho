@@ -179,3 +179,105 @@
     font-size: 2rem;
   }
 }
+
+/* --- Ventes ------------------------------------------------------------- */
+.stats + .stats {
+  margin-block-start: calc(-1 * var(--space-2));
+}
+.stat--hot {
+  border-color: color-mix(in srgb, var(--gold) 70%, transparent);
+  background: color-mix(in srgb, var(--gold) 10%, var(--color-surface));
+}
+.stat--hot .stat__value,
+.stat--hot .stat__icon {
+  color: var(--gold-light);
+}
+.stat--link {
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+.stat--link:hover {
+  border-color: color-mix(in srgb, var(--gold) 60%, transparent);
+}
+/* toute la carte est cliquable (lien étiré, le texte reste lisible par les lecteurs d'écran) */
+.stat__link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+.stat__link:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.dash-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--space-5);
+}
+.dash-grid .panel {
+  margin-block-end: 0;
+}
+.dash-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-block-end: var(--space-3);
+}
+.dash-chart {
+  display: block;
+  inline-size: 100%;
+  margin-block-start: var(--space-4);
+}
+.dash-chart__bar {
+  fill: var(--gold);
+}
+.dash-chart__bar.is-empty {
+  fill: color-mix(in srgb, var(--text) 12%, transparent);
+}
+.dash-chart__bar:hover {
+  fill: var(--gold-light);
+}
+.dash-chart__label {
+  fill: var(--color-text-muted);
+  font-size: 11px;
+}
+.dash-latest {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dash-latest__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  inline-size: 100%;
+  padding: var(--space-3) var(--space-2);
+  border: 0;
+  border-block-end: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.dash-latest__row:hover {
+  background: color-mix(in srgb, var(--gold) 6%, transparent);
+}
+.dash-latest__row small {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);
+}
+.dash-latest__side {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+@media (max-width: 1099.98px) {
+  .dash-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

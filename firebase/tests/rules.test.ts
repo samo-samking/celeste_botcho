@@ -189,3 +189,23 @@ describe("auditLogs — inaltérables", () => {
     await assertFails(deleteDoc(doc(manager(), "auditLogs/log1")));
   });
 });
+
+describe("pushTokens — appareils des admins", () => {
+  const device = (uid: string) => ({ uid, label: "Chrome · Windows", createdAt: serverTimestamp() });
+  it("un admin enregistre et retire son propre appareil", async () => {
+    await assertSucceeds(setDoc(doc(manager(), "pushTokens/jeton-m"), device("manager-uid")));
+    await assertSucceeds(getDoc(doc(manager(), "pushTokens/jeton-m")));
+    await assertSucceeds(deleteDoc(doc(manager(), "pushTokens/jeton-m")));
+  });
+  it("personne n'enregistre pour un autre, ne lit ni ne liste les appareils des autres", async () => {
+    await assertFails(setDoc(doc(manager(), "pushTokens/jeton-x"), device("owner-uid")));
+    await assertFails(setDoc(doc(visitor(), "pushTokens/jeton-v"), device("visiteur")));
+    await assertFails(setDoc(doc(manager(), "pushTokens/jeton-y"), { ...device("manager-uid"), extra: true }));
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), "pushTokens/jeton-o"), { uid: "owner-uid", label: "x", createdAt: new Date() });
+    });
+    await assertFails(getDoc(doc(manager(), "pushTokens/jeton-o")));
+    await assertFails(deleteDoc(doc(manager(), "pushTokens/jeton-o")));
+    await assertFails(getDocs(collection(owner(), "pushTokens")));
+  });
+});

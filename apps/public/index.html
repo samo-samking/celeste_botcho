@@ -17,6 +17,11 @@
     <!-- 1re image du hero : chargée tout de suite, selon l'écran -->
     <link rel="preload" as="image" href="/hero/desktop/frame_0001.webp" media="(min-width: 720px)" fetchpriority="high" />
     <link rel="preload" as="image" href="/hero/mobile/frame_0001.webp" media="(max-width: 719.98px)" fetchpriority="high" />
+    <!-- connexions ouvertes à l'avance : protection anti-robots (App Check) et base de données -->
+    <link rel="preconnect" href="https://www.google.com" />
+    <link rel="preconnect" href="https://www.gstatic.com" />
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://res.cloudinary.com" />
   </head>
   <body>
     <div id="app"></div>

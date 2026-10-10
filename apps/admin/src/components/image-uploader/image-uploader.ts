@@ -192,8 +192,9 @@ export class ImageUploader {
                       </div>
                     </div>
                     ${this.opts.withAlt && !item.error
-                      ? html`<input class="uploader__alt" type="text" placeholder="Description de la photo" aria-label="Description de la photo ${index + 1} (pour les lecteurs d'écran)"
-                          .value=${live(item.alt ?? '')} @input=${(e: InputEvent) => this.patch(item.key, { alt: (e.target as HTMLInputElement).value })} />`
+                      ? html`<textarea class="uploader__alt" rows="2" maxlength="140" placeholder="Décrire la photo…"
+                          aria-label="Description de la photo ${index + 1} (pour les lecteurs d'écran et Google)"
+                          .value=${live(item.alt ?? '')} @input=${(e: InputEvent) => this.patch(item.key, { alt: (e.target as HTMLTextAreaElement).value })}></textarea>`
                       : nothing}
                   </li>
                 `,

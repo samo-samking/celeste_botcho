@@ -569,11 +569,15 @@ Une seule page, 3 blocs visibles en même temps sur mobile (objectif : commande 
 - [ ] 🔒 D1, D3, D4, D7 avant la saisie réelle du catalogue.
 
 ### 4.5 Configuration (propriétaire)
-- [ ] Onglets : Boutique (nom, slogan, logo, numéros, WhatsApp, e-mail de contact, adresse, horaires, réseaux), Accueil (diapositives du carrousel, annonce), FAQ, Textes légaux, SEO (titre, description, image OG par défaut).
-- [ ] Aperçu en direct du carrousel et de la carte de partage.
+- [x] Onglets : Boutique (nom, slogan, numéros, WhatsApp, e-mail de contact, adresse, horaires), Réseaux sociaux (liens vérifiés et normalisés), Annonce (avec aperçu), FAQ (réordonnable, 20 max), Textes légaux (Markdown simple), Référencement (titre, description, image de partage Cloudinary).
+- [x] Aperçu en direct de la carte de partage (style WhatsApp) et du bandeau d'annonce ; barre d'enregistrement collante, onglets en erreur marqués, avertissement avant de quitter avec des modifications.
+- [x] Réservé à la propriétaire (menu masqué, accès direct redirigé) ; enregistrement journalisé (`settings.update`) ; tests `phone` et `settings.validation`.
+- [x] Boutique branchée sur `settings/public` (`stores/settings.store.ts`, lu au repos, mis en cache pour la visite) : pied de page, barre des réseaux sociaux, numéro de tous les liens WhatsApp.
+- [ ] Affichage public de l'annonce, de la FAQ et des textes légaux : avec l'en-tête et la page Contact (Phase 3.6).
+- [ ] Logo et carrousel : le hero actuel est une séquence animée, pas un carrousel ; à revoir si besoin.
 
 ### 4.6 Livraison
-- [ ] Zones (nom, mode `local` / `shipping`, tarif) ; réordonnables ; stockées dans `settings/public.deliveryZones`. 🔒 D5
+- [x] Zones (nom, mode `local` / `shipping`, tarif) ; réordonnables ; stockées dans `settings/public.deliveryZones` ; aperçu « ce que verra la cliente » ; lecture seule pour un gestionnaire (les règles réservent `settings` à la propriétaire). 🔒 D5 : tarifs réels à saisir.
 
 **Livrable (fin du lot 1 côté admin)** : la vendeuse saisit le catalogue réel sans aide.
 
@@ -628,33 +632,43 @@ L'adresse `contact@celestebotcho.com` (serveur LWS `mail.celestebotcho.com`, por
 **Durée** : 6 jours. (Lot 2 du cahier des charges.)
 
 ### 6.1 Commandes
-- [ ] Liste **en temps réel** (`onSnapshot` sur `new` + `confirmed`, 50 max) + historique paginé (25 par page, `startAfter`).
-- [ ] **Alerte sonore** et notification du navigateur à chaque nouvelle commande (après une interaction utilisateur, exigence des navigateurs) ; badge dans l'onglet (`(3) Commandes`).
-- [ ] Filtres : statut, période (aujourd'hui, 7 jours, mois, personnalisée), recherche par numéro ou téléphone.
-- [ ] Détail : coordonnées, articles, totaux, **alerte d'écart** si le total recalculé depuis le catalogue diffère du total envoyé, historique des statuts, note interne.
-- [ ] Changement de statut (transaction : commande + `orderTracking` + historique + décrément du stock au passage en « confirmée » + journal).
-- [ ] Annulation avec motif obligatoire (jamais de suppression).
-- [ ] « Écrire à la cliente sur WhatsApp » (message selon le statut), « Envoyer un e-mail » si e-mail fourni.
-- [ ] Export CSV (séparateur `;`, UTF-8 avec BOM pour Excel) sur la période filtrée.
-- [ ] Impression d'un bon de livraison (feuille de style `@media print`).
+- [x] Liste **en temps réel** (`onSnapshot` sur les statuts en cours, 100 max) + historique paginé (25 par page, `startAfter`).
+- [x] **Alerte sonore** (deux notes générées, sans fichier) et notification du navigateur à chaque nouvelle commande, **sur tous les écrans** (`app/live.ts`) ; compteur dans l'onglet et pastilles du menu (commandes, messages).
+- [x] Filtres : statut, période (aujourd'hui, 7 jours, mois, tout, dates), recherche par numéro ou téléphone.
+- [x] Détail : coordonnées, articles, totaux, **alerte d'écart** (total recalculé) et prix différents du catalogue actuel, frise des statuts, note interne, paiement reçu.
+- [x] Changement de statut (transaction : commande + `orderTracking` + historique + décrément du stock au passage en « confirmée », restitué si annulée + journal). Testé : 10 → 8 → 10.
+- [x] Annulation avec motif obligatoire (motifs courants en un clic ; jamais de suppression).
+- [x] « Écrire à la cliente sur WhatsApp » (message selon le statut) ; lien e-mail si fourni. Envoi d'e-mail serveur : Phase 5.
+- [x] Export CSV (séparateur `;`, UTF-8 avec BOM pour Excel) sur la période filtrée.
+- [x] Impression d'un bon de livraison (A5, `@media print`, signature et montant à encaisser).
 
 ### 6.2 Messages
-- [ ] Boîte de réception temps réel : nouveau / lu / traité ; passage automatique à « lu » à l'ouverture.
-- [ ] Réponse par WhatsApp ou par e-mail (`sendCustomerEmail`) ; produit concerné affiché.
+- [x] Boîte de réception temps réel : nouveau / lu / traité ; passage automatique à « lu » à l'ouverture ; recherche ; suppression (propriétaire).
+- [x] Réponse par WhatsApp ou par e-mail (lien `mailto:` ; `sendCustomerEmail` en Phase 5) ; produit concerné affiché.
 
 ### 6.3 Promotions
-- [ ] Liste (en cours, programmées, terminées) ; formulaire : titre, type (% / montant / prix fixe), valeur, portée (tout le site / catégorie / produit / format) avec sélecteur, code facultatif, dates de début et de fin, bannière, actif.
-- [ ] Aperçu : liste des produits concernés avec ancien et nouveau prix.
-- [ ] Avertissement si deux promos se chevauchent sur un même produit.
+- [x] Liste (en cours, programmées, terminées, désactivées) ; formulaire : titre, type (% / montant / prix fixe), valeur, portée (tout le site / catégorie / produit / format) avec sélecteur filtrable, code facultatif (unique), dates, actif. Bannière : plus tard.
+- [x] Aperçu : liste des formats concernés avec ancien et nouveau prix (`domain/promo.ts`, testé).
+- [x] Avertissement si deux promos se chevauchent sur un même produit (la plus avantageuse s'applique).
 
 ### 6.4 Tableau de bord
-- [ ] Cartes : commandes du jour, chiffre du mois (commandes livrées), messages non lus, produits en rupture, promos actives (requêtes d'agrégation `count()` / `sum()`).
-- [ ] Liste des 5 dernières commandes ; graphique simple des commandes sur 30 jours (SVG, pas de bibliothèque).
+- [x] Cartes : nouvelles commandes, commandes du jour, chiffre du mois (livrées), messages non lus, catalogue, promos en cours (une requête sur 31 jours plutôt que des agrégations).
+- [x] Liste des 5 dernières commandes (détail en un clic) ; graphique des commandes sur 30 jours (SVG, sans bibliothèque).
 
 ### 6.5 Comptes admin et journal (propriétaire)
-- [ ] Liste des comptes, invitation (lot 1–2 : via `scripts/set-admin.ts` ; lot 3 : fonction `setAdminRole`), désactivation.
-- [ ] Journal paginé, filtrable par action et par auteur.
-- [ ] Bouton **« Exporter les données »** (commandes + catalogue en JSON) — sauvegarde hebdomadaire manuelle tant que l'export planifié n'est pas en place.
+- [x] Liste des comptes (rôle, dernière connexion), renommer, désactiver / réactiver (sauf la propriétaire), marche à suivre pour ajouter un gestionnaire (`set-admin`). Fonction `setAdminRole` : lot 3.
+- [x] Journal paginé (50 par page), filtrable par type d'action et par auteur, libellés en français.
+- [x] Bouton **« Exporter les données »** (catalogue, promos, réglages, commandes en JSON) — sauvegarde hebdomadaire manuelle tant que l'export planifié n'est pas en place.
+- [x] Index et règles déployés (10/10/2026), dont la règle `pushTokens`.
+
+### 6.6 Notifications push (Firebase Cloud Messaging)
+- [x] Clé publique VAPID dans `.env.local` (`VITE_FIREBASE_VAPID_KEY`) ; la clé privée reste chez Firebase.
+- [x] `pushTokens/{jeton}` : `uid`, `label` (« Chrome · Android »), `createdAt` ; règles : chacun gère ses appareils, liste réservée au serveur (2 tests).
+- [x] Admin : bouton « Recevoir les alertes sur cet appareil » (Commandes, Messages, encart du tableau de bord) ; `firebase-messaging-sw.js` (configuration passée dans l'adresse) ; pas de doublon avec l'alerte de l'onglet ouvert.
+- [x] Fonctions (africa-south1, sans secret) : `onOrderCreated` (« Nouvelle commande · total ») et `onMessagePush` (« Message de … ») → `notifyAdmins()` ; jetons expirés supprimés ; clic = écran concerné de l'admin en ligne.
+- [x] Admin publié sur https://celestebotcho-admin.web.app (connexion vérifiée sur ce domaine).
+- [ ] `onMessageCreated` (e-mail) : à exporter en Phase 5 après `firebase functions:secrets:set SMTP_USER` / `SMTP_PASSWORD`.
+- [ ] iPhone : les notifications web ne fonctionnent qu'après « Ajouter à l'écran d'accueil » (iOS 16.4+).
 
 ---
 
@@ -1047,3 +1061,8 @@ Admin : ajouter à `connect-src` `https://identitytoolkit.googleapis.com https:/
 | Soins & gamme spécifique | Sirop ventre plat, suppositoires (🔒 D8), crème réparatrice, crème rondeur |
 
 Zones de livraison provisoires : Abidjan (toutes communes) 1 500 F · Intérieur du pays (expédition) 2 000 F (🔒 D5).
+
+## Ajouts du 10/10/2026
+- [x] **Commande depuis le panier** (`components/cart-drawer/checkout.ts`) : coordonnées (retenues sur le téléphone), zone de livraison (écran Livraison ; « à convenir » s'il n'y en a pas), paiement à la livraison ou mobile money, code promo, CGV ; calcul sur le catalogue relu (`domain/checkout.ts`, testé) ; `checkoutRepository.create` (commande + suivi, nouveau numéro si collision) ; confirmation avec numéro et récapitulatif WhatsApp ; alerte push à l'admin. Testé sur les émulateurs de bout en bout (sans écart dans l'admin).
+- [x] **Décors de fête** (`domain/festive.ts`, `components/festive/`) : fin d'année (1er déc. → 6 janv. ; vœux Noël puis Nouvel An) et Indépendance (1er → 10 août) ; flocons/paillettes ou confettis sur canvas, ruban sous le menu, vœux qu'on peut fermer ; chargé seulement pendant une fête ; rien n'intercepte les clics ; immobile si animations réduites. Admin : Configuration › Fêtes (automatique, désactivé, thème forcé) + aperçu `?fete=fin-annee|independance|aucune` pour l'onglet seulement.
+- [x] Pied de page en 4 colonnes avec bandeau WhatsApp (Lottie `contact-bubble.json`), FAQ en accordéon sur l'accueil, textes légaux dans un panneau (`#cgv`, `#mentions-legales`, `#confidentialite`).

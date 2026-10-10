@@ -36,8 +36,9 @@ function blockContent(block: HeroBlock, index: number): TemplateResult {
       ${block.variante === 'cta'
         ? html`
             <div class="hero-block__actions">
-              <a class="btn btn--primary" href=${buildContactLink(WHATSAPP_NUMBER, WHATSAPP_MESSAGES.general)} target="_blank" rel="noopener">
-                ${icon(whatsapp)} Commander sur WhatsApp
+              <a class="btn btn--primary" href=${buildContactLink(WHATSAPP_NUMBER, WHATSAPP_MESSAGES.general)} target="_blank" rel="noopener"
+                aria-label="Commander sur WhatsApp">
+                ${icon(whatsapp)} WhatsApp
               </a>
               <a class="btn btn--secondary" href="#produits">Voir les produits</a>
             </div>

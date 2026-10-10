@@ -4,8 +4,7 @@
 //   (en local, lue dans functions/.secret.local)
 import { defineSecret, defineString, defineInt } from 'firebase-functions/params';
 
-// même région que la base Firestore (obligatoire pour les déclencheurs Firestore)
-export const REGION = 'africa-south1';
+export { REGION } from './region.js';
 
 // --- E-mail (formulaire de contact → propriétaire)
 export const SMTP_HOST = defineString('SMTP_HOST', { default: 'mail.celestebotcho.com' });

@@ -1,52 +1,154 @@
 .site-footer {
   margin-block-start: var(--space-8);
-  padding-block: var(--space-7) var(--space-5);
+  padding-block: 0 var(--space-5);
   border-block-start: 1px solid var(--color-border);
   background: color-mix(in srgb, var(--bg) 80%, black);
   scroll-margin-top: var(--header-h);
 }
 
-.site-footer__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-6);
+/* --- Bandeau d'appel : chevauche le haut du pied de page ------------------ */
+.footer-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-6);
+  margin-block: calc(-1 * var(--space-7)) var(--space-7);
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(120% 160% at 0% 0%, rgb(245 184 0 / 0.22), transparent 60%),
+    color-mix(in srgb, var(--bg) 88%, var(--gold) 12%);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
+}
+.footer-cta__visual {
+  flex-shrink: 0;
+  inline-size: 84px;
+  block-size: 84px;
+  margin-block: calc(-1 * var(--space-3));
+  margin-inline-end: calc(-1 * var(--space-3)); /* l'animation a sa propre marge intérieure */
+  filter: drop-shadow(0 10px 18px rgb(0 0 0 / 0.35));
+}
+.footer-cta__copy {
+  flex: 1 1 260px;
+}
+.footer-cta__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+  font-weight: 700;
+}
+.footer-cta__text {
+  margin-block-start: var(--space-1);
+  color: var(--color-text-muted);
+}
+.footer-cta__btn {
+  flex-shrink: 0;
 }
 
+/* --- 4 colonnes ---------------------------------------------------------- */
+.site-footer__grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(0, 1fr));
+  gap: var(--space-6) var(--space-7);
+}
 .site-footer__logo {
   inline-size: auto;
   block-size: 64px;
 }
 .site-footer__tagline {
+  max-inline-size: 30ch;
   margin-block-start: var(--space-3);
   color: var(--color-text-muted);
   font-size: var(--fs-sm);
+}
+.site-footer__socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.site-footer__socials a {
+  display: grid;
+  place-items: center;
+  inline-size: 42px;
+  block-size: 42px;
+  border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 1.1rem;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+.site-footer__socials a:hover {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--bg);
 }
 
 .site-footer__title {
   margin-block-end: var(--space-3);
   color: var(--gold);
-  font-size: var(--fs-md);
-  letter-spacing: 0.08em;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
-
-.site-footer__list {
+.site-footer__links,
+.site-footer__contact {
   display: grid;
-  gap: var(--space-1);
+  gap: 2px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
-.site-footer__list a {
+.site-footer__links a,
+.site-footer__linkbtn,
+.site-footer__contact a,
+.site-footer__hours {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  min-block-size: var(--touch-min);
+  min-block-size: 36px; /* zone de toucher confortable */
+  color: color-mix(in srgb, var(--text) 82%, transparent);
+  font-size: var(--fs-sm);
   text-decoration: none;
+  overflow-wrap: anywhere;
+  transition: color var(--duration-fast) var(--ease-out);
 }
-.site-footer__list a:hover {
+.site-footer__linkbtn {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+.site-footer__links a:hover,
+.site-footer__linkbtn:hover,
+.site-footer__contact a:hover {
   color: var(--gold-light);
 }
+.site-footer__contact a {
+  font-variant-numeric: tabular-nums;
+}
+.site-footer__contact .icon {
+  color: var(--gold);
+}
+.site-footer__hours {
+  color: var(--color-text-muted);
+}
+.site-footer__arrow {
+  display: inline-grid;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+.site-footer__contact a:hover .site-footer__arrow {
+  transform: translateX(3px);
+}
 
+/* --- Barre du bas -------------------------------------------------------- */
 .site-footer__legal {
   display: flex;
   flex-wrap: wrap;
@@ -58,16 +160,69 @@
   color: var(--color-text-muted);
   font-size: var(--fs-xs);
 }
-.site-footer__cookies {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
+/* crédit du développeur : dernière ligne, centrée */
+.site-footer__credit {
+  flex-basis: 100%;
+  margin-block-start: var(--space-2);
+  text-align: center;
+  letter-spacing: 0.02em;
 }
-.site-footer__cookies:hover {
+.site-footer__credit strong {
   color: var(--gold-light);
+  font-weight: 600;
+}
+
+/* --- Tablette : 2 colonnes ; téléphone : 1 colonne ------------------------- */
+@media (max-width: 1023.98px) {
+  .site-footer__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 559.98px) {
+  .footer-cta {
+    padding: var(--space-5) var(--space-4);
+    text-align: center;
+  }
+  .footer-cta,
+  .footer-cta__btn {
+    justify-content: center;
+    inline-size: 100%;
+  }
+  .footer-cta__visual {
+    margin: calc(-1 * var(--space-2)) auto 0;
+  }
+  /* téléphone : marque centrée, puis Boutique et Informations côte à côte, puis Contact */
+  .site-footer__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6) var(--space-4);
+  }
+  .site-footer__brand {
+    display: grid;
+    grid-column: 1 / -1;
+    justify-items: center;
+    text-align: center;
+  }
+  .site-footer__socials {
+    justify-content: center;
+  }
+  .site-footer__grid > :nth-child(3) {
+    order: 4; /* Contact après Boutique et Informations */
+    grid-column: 1 / -1;
+  }
+  .site-footer__grid > :nth-child(4) {
+    order: 3;
+  }
+  /* numéros sur deux colonnes */
+  .site-footer__contact {
+    grid-template-columns: repeat(2, minmax(0, max-content));
+    gap: 2px var(--space-5);
+  }
+  .site-footer__contact li:has(a[href^='mailto']),
+  .site-footer__hours {
+    grid-column: 1 / -1;
+  }
+  .site-footer__legal {
+    flex-direction: column;
+    text-align: center;
+  }
 }

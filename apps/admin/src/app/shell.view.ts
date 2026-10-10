@@ -22,6 +22,8 @@ import {
 import type { AdminSession } from '@celeste/shared/services/auth.service';
 import { signOut } from './auth.guard';
 import { navigate, ROUTES } from './router';
+import { newMessages, newOrders, startLive, stopLive } from './live';
+import { effect } from '@preact/signals-core';
 
 const PUBLIC_SITE = 'https://celestebotcho-322a5.web.app';
 const ROLE_LABELS = { owner: 'Propriétaire', manager: 'Gestionnaire' } as const;
@@ -30,6 +32,8 @@ interface NavItem {
   label: string;
   icon: string;
   path?: string; // absent = bientôt
+  /** Compteur en temps réel (nouvelles commandes, messages non lus). */
+  badge?: () => number;
 }
 interface NavSection {
   title: string;
@@ -44,24 +48,24 @@ const NAV: NavSection[] = [
     items: [
       { label: 'Produits', icon: packageIcon, path: ROUTES.products },
       { label: 'Catégories', icon: folder, path: ROUTES.categories },
-      { label: 'Promotions', icon: percent },
+      { label: 'Promotions', icon: percent, path: ROUTES.promotions },
     ],
   },
   {
     title: 'Ventes',
     items: [
-      { label: 'Commandes', icon: clipboardList },
-      { label: 'Messages', icon: chat },
-      { label: 'Livraison', icon: truck },
+      { label: 'Commandes', icon: clipboardList, path: ROUTES.orders, badge: () => newOrders.value },
+      { label: 'Messages', icon: chat, path: ROUTES.messages, badge: () => newMessages.value },
+      { label: 'Livraison', icon: truck, path: ROUTES.delivery },
     ],
   },
   {
     title: 'Administration',
     ownerOnly: true,
     items: [
-      { label: 'Configuration', icon: settings },
-      { label: 'Comptes admin', icon: users },
-      { label: 'Journal', icon: history },
+      { label: 'Configuration', icon: settings, path: ROUTES.settings },
+      { label: 'Comptes admin', icon: users, path: ROUTES.admins },
+      { label: 'Journal', icon: history, path: ROUTES.journal },
     ],
   },
 ];
@@ -91,6 +95,7 @@ export function mountShell(container: HTMLElement, user: AdminSession): ShellHan
             <a class="nav__link ${isActive(item.path) ? 'is-active' : ''}" href=${item.path} data-link
               aria-current=${isActive(item.path) ? 'page' : 'false'}>
               ${icon(item.icon)}<span>${item.label}</span>
+              ${item.badge?.() ? html`<span class="nav__badge" aria-label="${item.badge()} nouveau(x)">${item.badge()}</span>` : nothing}
             </a>
           </li>
         `
@@ -159,6 +164,7 @@ export function mountShell(container: HTMLElement, user: AdminSession): ShellHan
                 ${icon(logout)}<span>Se déconnecter</span>
               </button>
             </div>
+            <p class="sidebar__credit">Conçu par <strong>DevAlpha</strong> · développeur freelance</p>
           </aside>
           ${drawerOpen ? html`<div class="shell__scrim" @click=${() => setDrawer(false)}></div>` : nothing}
 
@@ -170,6 +176,13 @@ export function mountShell(container: HTMLElement, user: AdminSession): ShellHan
   }
 
   draw();
+  // compteurs en temps réel (commandes, messages) : alertes sur tous les écrans, pastilles du menu
+  startLive((path) => navigate(path));
+  const stopBadges = effect(() => {
+    void newOrders.value;
+    void newMessages.value;
+    draw();
+  });
 
   return {
     show(path: string, page: Page) {
@@ -188,6 +201,8 @@ export function mountShell(container: HTMLElement, user: AdminSession): ShellHan
       outlet.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true });
     },
     destroy() {
+      stopBadges();
+      stopLive();
       pageCleanup?.();
       document.removeEventListener('keydown', onKey);
       render(nothing, container);

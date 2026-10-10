@@ -14,6 +14,16 @@ export const CONTACT_EMAIL = 'contact@celestebotcho.com';
 /** Réseaux sociaux : un lien vide n'est pas affiché. */
 export const SOCIALS = { facebook: '', instagram: '', tiktok: '' };
 
+/** Questions fréquentes affichées tant qu'aucune n'est saisie dans Configuration › FAQ. Sans promesse médicale. */
+export const DEFAULT_FAQ = [
+  { question: 'Comment passer commande ?', answer: 'Ajoutez vos produits au panier puis validez, ou écrivez-nous directement sur WhatsApp : nous confirmons votre commande et l’adresse de livraison avec vous.' },
+  { question: 'Comment se passe le paiement ?', answer: 'Vous payez à la livraison, en espèces, à la réception de votre colis. Le paiement par mobile money est aussi possible : il se convient sur WhatsApp.' },
+  { question: 'Livrez-vous partout en Côte d’Ivoire ?', answer: 'Oui : livraison en main propre à Abidjan, et expédition vers l’intérieur du pays. Les frais dépendent de votre zone et sont indiqués avant de valider.' },
+  { question: 'Le colis est-il discret ?', answer: 'Oui. Votre commande est remise dans un emballage neutre, sans mention de son contenu.' },
+  { question: 'Quel format choisir ?', answer: 'Le petit pot permet de découvrir le produit ; les pots moyen et grand conviennent à une utilisation suivie. Nous vous conseillons volontiers sur WhatsApp.' },
+  { question: 'Y a-t-il des précautions ?', answer: 'Lisez les précautions indiquées sur chaque produit. Nos produits ne remplacent pas un avis médical : en cas de doute, de grossesse, d’allaitement ou de traitement, demandez conseil à un professionnel de santé.' },
+];
+
 export const WHATSAPP_MESSAGES = {
   general: 'Bonjour Céleste Bôtchô, je souhaite passer une commande.',
   product: (name: string, price: string) => `Bonjour Céleste Bôtchô, je souhaite commander : ${name} (${price}).`,
@@ -130,7 +140,7 @@ export const HERO_PRODUCTS: HeroProduct[] = [
 export const HERO_PRODUCTS_TIMING = { debut: 0.45, fin: 0.58, decalage: 0.04 };
 
 export const ORDER_STEPS = [
-  { titre: 'Choisissez votre format', texte: 'Petit, moyen ou grand pot : parcourez nos produits ci-dessus.' },
-  { titre: 'Écrivez-nous sur WhatsApp', texte: 'Un clic sur « Commander » ouvre la conversation avec votre choix déjà rempli.' },
-  { titre: 'Recevez chez vous', texte: "Livraison à Abidjan et expédition partout en Côte d'Ivoire. Paiement à la livraison ou par mobile money." },
+  { titre: 'Choisissez vos produits', texte: 'Petit, moyen ou grand pot : ajoutez-les à votre panier depuis la vitrine ci-dessus.' },
+  { titre: 'Commandez sur le site ou sur WhatsApp', texte: 'Validez votre panier en quelques secondes ici même, ou écrivez-nous sur WhatsApp : votre choix est déjà rempli.' },
+  { titre: 'Recevez chez vous', texte: "Livraison à Abidjan et expédition partout en Côte d'Ivoire. Vous payez à la livraison, rien à régler avant." },
 ];

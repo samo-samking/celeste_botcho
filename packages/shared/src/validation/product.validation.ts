@@ -31,6 +31,10 @@ export function validateProduct(input: ProductInput): ValidationResult<ProductIn
     skus.add(v.sku);
   });
 
+  // photo d'un format : forcément une des photos du produit (une photo retirée libère le format)
+  const urls = new Set(input.images.map((img) => img.url));
+  const variants = input.variants.map((v) => ({ ...v, image: v.image && urls.has(v.image) ? v.image : null }));
+
   if (input.seo.title.length > SEO_TITLE_MAX) errors['seo.title'] = `${SEO_TITLE_MAX} caractères maximum.`;
   if (input.seo.description.length > SEO_DESCRIPTION_MAX) errors['seo.description'] = `${SEO_DESCRIPTION_MAX} caractères maximum.`;
 
@@ -38,5 +42,5 @@ export function validateProduct(input: ProductInput): ValidationResult<ProductIn
     const issues = publicationIssues(input);
     if (issues.length) errors.status = `Pour publier, il manque : ${issues.join(', ')}.`;
   }
-  return result({ ...input, name }, errors);
+  return result({ ...input, name, variants }, errors);
 }

@@ -3,7 +3,7 @@
 // changement de catégorie (sortie échelonnée par le haut, entrée par le bas, couleur de fond qui fond).
 import { html, render } from 'lit-html';
 import { icon } from '@celeste/shared/icons/icon';
-import { arrowRight, bagPlus, chevronLeft, chevronRight, whatsapp } from '@celeste/shared/icons';
+import { bagPlus, chevronLeft, chevronRight, whatsapp } from '@celeste/shared/icons';
 import { formatFcfa } from '@celeste/shared/utils/format-fcfa';
 import { addToCart } from '../../../stores/cart.store';
 import { flyToCart } from '../../../components/cart-drawer/cart-fly';
@@ -59,7 +59,9 @@ export async function mountVitrine(section: HTMLElement): Promise<void> {
     html`
       <div class="vitrine__inner">
         <h2 class="visually-hidden" id="vitrine-title">Nos produits par catégorie</h2>
-        <div class="vitrine__tabs" role="tablist" aria-label="Catégories">
+        <p class="vitrine__kicker" id="vitrine-tabs-label">Catégorie</p>
+        <div class="vitrine__tabs" role="tablist" aria-labelledby="vitrine-tabs-label">
+          <span class="vitrine__pill" aria-hidden="true"></span>
           ${data.map(
             (c, i) => html`
               <button class="vitrine__tab" role="tab" type="button" id="vitrine-tab-${i}" aria-controls="vitrine-panel"
@@ -72,25 +74,11 @@ export async function mountVitrine(section: HTMLElement): Promise<void> {
 
         <div class="vitrine__panel" id="vitrine-panel" role="tabpanel" aria-labelledby="vitrine-tab-0">
           <p class="visually-hidden" id="vitrine-help">Flèches gauche et droite : produit précédent ou suivant. Touches 1 à ${data.length} : catégories.</p>
+          <!-- à gauche : la catégorie seule -->
           <div class="vitrine__copy">
-            <div class="vitrine__catblock">
-              <p class="vitrine__kicker">Catégorie</p>
-              <h3 class="vitrine__cat" data-ref="cat">${first.name}</h3>
-              <p class="vitrine__desc" data-ref="desc">${first.description}</p>
-            </div>
+            <h3 class="vitrine__cat" data-ref="cat">${first.name}</h3>
+            <p class="vitrine__desc" data-ref="desc">${first.description}</p>
             <span class="vitrine__rule" aria-hidden="true"></span>
-            <div class="vitrine__productblock">
-              <p class="vitrine__pname" data-ref="pname"></p>
-              <p class="vitrine__price" data-ref="price"></p>
-              <div class="vitrine__formats" data-ref="formats" role="group" aria-label="Format"></div>
-            </div>
-            <div class="vitrine__actions">
-              <button class="btn vitrine__order" type="button" data-ref="add">${icon(bagPlus)} <span data-ref="addlabel">Ajouter au panier</span></button>
-              <span class="vitrine__links">
-                <a class="vitrine__all" data-ref="order" href="#" target="_blank" rel="noopener">${icon(whatsapp)} Commander sur WhatsApp</a>
-                <a class="vitrine__all" data-ref="all" href="#">Voir toute la catégorie ${icon(arrowRight)}</a>
-              </span>
-            </div>
           </div>
 
           <div class="vitrine__stage" data-ref="stage" tabindex="0" role="group" aria-roledescription="carrousel"
@@ -113,6 +101,16 @@ export async function mountVitrine(section: HTMLElement): Promise<void> {
             )}
           </div>
 
+          <!-- à droite de la photo : la carte du produit affiché -->
+          <div class="vitrine__card">
+            <p class="vitrine__pname" data-ref="pname"></p>
+            <p class="vitrine__price" data-ref="price"></p>
+            <div class="vitrine__formats" data-ref="formats" role="group" aria-label="Format"></div>
+            <p class="vitrine__vdesc" data-ref="vdesc"></p>
+            <button class="btn vitrine__order" type="button" data-ref="add">${icon(bagPlus)} <span data-ref="addlabel">Ajouter au panier</span></button>
+            <a class="vitrine__all vitrine__wa" data-ref="order" href="#" target="_blank" rel="noopener">${icon(whatsapp)} Commander sur WhatsApp</a>
+          </div>
+
           <div class="vitrine__nav">
             <button class="vitrine__arrow" type="button" data-ref="prev">${icon(chevronLeft, { label: 'Produit précédent' })}</button>
             <p class="vitrine__count" aria-hidden="true"><span data-ref="index">1</span> / <span data-ref="total">${first.products.length}</span></p>
@@ -127,8 +125,24 @@ export async function mountVitrine(section: HTMLElement): Promise<void> {
 
   const $ = <T extends HTMLElement = HTMLElement>(ref: string) => section.querySelector<T>(`[data-ref="${ref}"]`)!;
   const tabs = [...section.querySelectorAll<HTMLButtonElement>('.vitrine__tab')];
+  const tablist = section.querySelector<HTMLElement>('.vitrine__tabs')!;
+
+  /** Place la pastille sous l'onglet actif (elle glisse grâce à la transition CSS). */
+  const placePill = () => {
+    const tab = tabs[state.cat];
+    if (!tab) return;
+    tablist.style.setProperty('--pill-x', `${tab.offsetLeft}px`);
+    tablist.style.setProperty('--pill-w', `${tab.offsetWidth}px`);
+    tablist.classList.toggle('is-scrollable', tablist.scrollWidth > tablist.clientWidth + 1);
+    // liste plus large que l'écran (mobile) : l'onglet actif reste visible
+    const left = tab.offsetLeft - tablist.clientWidth / 2 + tab.offsetWidth / 2;
+    tablist.scrollTo({ left: Math.max(0, left), behavior: reduced() ? 'auto' : 'smooth' });
+  };
+  new ResizeObserver(placePill).observe(tablist);
+  void document.fonts?.ready.then(placePill); // la largeur des onglets change quand la police arrive
   const groups = [...section.querySelectorAll<HTMLElement>('.vitrine__group')];
   const copy = section.querySelector<HTMLElement>('.vitrine__copy')!;
+  const card = section.querySelector<HTMLElement>('.vitrine__card')!;
   const panel = section.querySelector<HTMLElement>('.vitrine__panel')!;
   const items = (cat: number) => [...groups[cat]!.querySelectorAll<HTMLElement>('.vitrine__item')];
   let busy = false;
@@ -137,6 +151,38 @@ export async function mountVitrine(section: HTMLElement): Promise<void> {
   const variantOf = (p: CatalogProduct) => {
     const sku = chosen.get(p.id) ?? p.variants.find((v) => v.available)?.sku ?? p.variants[0]!.sku;
     return p.variants.find((v) => v.sku === sku) ?? p.variants[0]!;
+  };
+
+  /** Photo à montrer : celle du format choisi par la cliente, sinon la photo principale du produit. */
+  const photoOf = (p: CatalogProduct) => (chosen.has(p.id) ? variantOf(p).image : null) ?? p.image;
+
+  /** Remplace en fondu la photo du produit affiché quand on change de format. */
+  const showPhoto = (cat: number, index: number) => {
+    const p = data[cat]!.products[index]!;
+    const target = photoOf(p);
+    const img = items(cat)[index]?.querySelector<HTMLImageElement>('img');
+    if (!target || !img || img.dataset.src === target.src) return;
+    img.dataset.src = target.src;
+    const swap = () => {
+      img.src = target.src;
+      img.alt = target.alt;
+      img.classList.remove('is-swapping');
+    };
+    // la nouvelle photo est chargée AVANT le fondu : l'ancienne reste visible en attendant
+    const next = new Image();
+    next.src = target.src;
+    void next
+      .decode()
+      .catch(() => undefined)
+      .then(async () => {
+        if (img.dataset.src !== target.src) return; // un autre format a été choisi entre-temps
+        if (!reduced()) {
+          img.classList.add('is-swapping');
+          await wait(180);
+          if (img.dataset.src !== target.src) return;
+        }
+        swap();
+      });
   };
 
   /** Charge l'image d'un produit (et précharge les voisines). */
@@ -157,7 +203,47 @@ export async function mountVitrine(section: HTMLElement): Promise<void> {
 
   const setStates = (cat: number, active: number) => items(cat).forEach((el, i) => (el.dataset.state = itemState(i, active)));
 
-  const updateCopy = () => {
+  /** Remplace un texte : l'ancien monte et s'efface, le nouveau arrive par le bas. */
+  const rollText = (el: HTMLElement, text: string) => {
+    if (el.textContent === text) return;
+    el.getAnimations().forEach((a) => a.cancel());
+    if (reduced()) {
+      el.textContent = text;
+      return;
+    }
+    const out = el.animate(
+      [{ transform: 'none', opacity: 1 }, { transform: 'translateY(-45%)', opacity: 0 }],
+      { duration: 140, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' },
+    );
+    out.onfinish = () => {
+      el.textContent = text;
+      out.cancel();
+      el.animate(
+        [{ transform: 'translateY(45%)', opacity: 0 }, { transform: 'none', opacity: 1 }],
+        { duration: 260, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
+      );
+    };
+  };
+
+  /** Remplace la description du format en fondu, la hauteur s'ajuste en douceur (pas de saut). */
+  const fadeBlock = (el: HTMLElement, text: string) => {
+    if (el.textContent === text) return;
+    el.getAnimations().forEach((a) => a.cancel());
+    const from = el.offsetHeight;
+    el.textContent = text;
+    if (reduced() || !text) return;
+    const to = el.offsetHeight;
+    el.animate(
+      [
+        { blockSize: `${from}px`, opacity: 0, transform: 'translateY(6px)', overflow: 'hidden' },
+        { blockSize: `${to}px`, opacity: 1, transform: 'none', overflow: 'hidden' },
+      ],
+      { duration: 320, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
+    );
+  };
+
+  /** `animate` : changement de format dans la carte (sinon la carte est déjà en fondu). */
+  const updateCopy = (animate = false) => {
     const c = data[state.cat]!;
     const p = c.products[state.product]!;
     $('cat').textContent = c.name;
@@ -165,13 +251,23 @@ export async function mountVitrine(section: HTMLElement): Promise<void> {
     const v = variantOf(p);
     const price = formatFcfa(v.price);
     $('pname').textContent = p.name;
-    $('price').textContent = p.variants.length > 1 ? price : `${v.label} · ${price}`;
+    const priceText = p.variants.length > 1 ? price : `${v.label} · ${price}`;
+    // description de la photo du format choisi (« Petit pot transparent de 30 boules… »)
+    const photo = chosen.has(p.id) ? v.image : null;
+    const vdesc = photo && photo.alt !== p.name ? photo.alt : '';
+    if (animate) {
+      rollText($('price'), priceText);
+      fadeBlock($('vdesc'), vdesc);
+    } else {
+      $('price').textContent = priceText;
+      $('vdesc').textContent = vdesc;
+    }
     renderFormats(p, v.sku);
+    placeFormatPill(p.id);
     const add = $<HTMLButtonElement>('add');
     add.disabled = !v.available;
     $('addlabel').textContent = v.available ? 'Ajouter au panier' : 'Format épuisé';
     $<HTMLAnchorElement>('order').href = orderLink(`${p.name} (${v.label})`, price);
-    $<HTMLAnchorElement>('all').href = `/catalogue/${c.slug}`;
     $('index').textContent = String(state.product + 1);
     $('total').textContent = String(c.products.length);
     tabs.forEach((t, i) => {
@@ -179,19 +275,37 @@ export async function mountVitrine(section: HTMLElement): Promise<void> {
       t.tabIndex = i === state.cat ? 0 : -1;
     });
     panel.setAttribute('aria-labelledby', `vitrine-tab-${state.cat}`);
+    placePill();
     $('live').textContent = `${c.name} : ${p.name}, ${v.label}, ${price}. Produit ${state.product + 1} sur ${c.products.length}.`;
   };
+
+  /** Pastille derrière le format choisi : elle glisse d'un format à l'autre, saute d'un produit à l'autre. */
+  let pillProduct = '';
+  function placeFormatPill(productId: string) {
+    const box = $('formats');
+    const chip = box.querySelector<HTMLElement>('.vitrine__format.is-selected');
+    if (!chip) return;
+    box.classList.toggle('is-jump', productId !== pillProduct);
+    pillProduct = productId;
+    box.style.setProperty('--fx', `${chip.offsetLeft}px`);
+    box.style.setProperty('--fy', `${chip.offsetTop}px`);
+    box.style.setProperty('--fw', `${chip.offsetWidth}px`);
+    box.style.setProperty('--fh', `${chip.offsetHeight}px`);
+  }
+  new ResizeObserver(() => placeFormatPill(pillProduct)).observe($('formats'));
 
   /** Boutons de format (seulement s'il y en a plusieurs). */
   function renderFormats(p: CatalogProduct, sku: string) {
     render(
       p.variants.length > 1
-        ? html`${p.variants.map(
+        ? html`<span class="vitrine__fpill" aria-hidden="true"></span>${p.variants.map(
             (v) => html`
               <button class="vitrine__format ${v.sku === sku ? 'is-selected' : ''}" type="button" aria-pressed=${v.sku === sku ? 'true' : 'false'}
                 ?disabled=${!v.available} @click=${() => {
+                  if (variantOf(p).sku === v.sku && chosen.has(p.id)) return;
                   chosen.set(p.id, v.sku);
-                  updateCopy();
+                  updateCopy(true);
+                  showPhoto(state.cat, state.product);
                 }}>
                 <span>${v.label}</span>
                 <small>${v.available ? formatFcfa(v.price, { short: true }) : 'épuisé'}</small>
@@ -211,17 +325,18 @@ export async function mountVitrine(section: HTMLElement): Promise<void> {
 
     if (move.kind === 'product') {
       ensureImages(move.cat, move.to);
-      copy.classList.add('is-dim');
+      card.classList.add('is-dim');
       setStates(move.cat, move.to);
       await wait(fast ? 100 : SWAP_AT);
       updateCopy();
-      copy.classList.remove('is-dim');
+      card.classList.remove('is-dim');
       await wait(duration - (fast ? 100 : SWAP_AT));
     } else {
       const out = groups[move.fromCat]!;
       const into = groups[move.toCat]!;
       ensureImages(move.toCat, move.toProduct);
       copy.classList.add('is-fade');
+      card.classList.add('is-fade');
       applyColors(move.toCat);
 
       // l'ancienne catégorie sort par le haut, produit après produit
@@ -248,6 +363,7 @@ export async function mountVitrine(section: HTMLElement): Promise<void> {
       await wait(fast ? 100 : SWAP_AT);
       updateCopy();
       copy.classList.remove('is-fade');
+      card.classList.remove('is-fade');
       const longest = fast ? 200 : DURATION + 100 + STAGGER * Math.max(incoming.length, items(move.fromCat).length);
       await wait(longest - (fast ? 100 : SWAP_AT));
       out.classList.remove('is-current', 'is-leaving');

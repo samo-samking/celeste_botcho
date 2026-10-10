@@ -206,3 +206,46 @@
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--gold) 45%, transparent) transparent;
 }
+
+/* Saisie d'un texte (motif d'annulation…) */
+.prompt {
+  display: grid;
+  gap: var(--space-2);
+}
+.prompt__message {
+  margin-block-end: var(--space-2);
+  color: var(--color-text-muted);
+}
+.prompt__input {
+  inline-size: 100%;
+  min-block-size: 88px;
+  padding: var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg) 70%, black);
+  color: var(--text);
+  font: 400 var(--fs-md) var(--font-body);
+  resize: vertical;
+}
+.prompt__input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+.prompt__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.chip {
+  min-block-size: 32px;
+  padding: 0 var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--text);
+  font: 500 var(--fs-xs) var(--font-body);
+  cursor: pointer;
+}
+.chip:hover {
+  border-color: var(--gold);
+  color: var(--gold-light);
+}

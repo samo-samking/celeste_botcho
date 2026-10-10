@@ -120,6 +120,21 @@ a.nav__link:hover .icon {
   letter-spacing: 0.06em;
 }
 
+/* compteur en temps réel (nouvelles commandes, messages non lus) */
+.nav__badge {
+  display: grid;
+  place-items: center;
+  min-inline-size: 22px;
+  block-size: 22px;
+  margin-inline-start: auto;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: var(--gold);
+  color: var(--bg);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+}
+
 /* --- Compte ------------------------------------------------------------ */
 .sidebar__account {
   display: flex;
@@ -388,4 +403,17 @@ a.nav__link:hover .icon {
 }
 .btn--danger:hover {
   background: #d9534f;
+}
+
+/* crédit du développeur, en bas du menu */
+.sidebar__credit {
+  margin-block-start: var(--space-3);
+  padding-inline: var(--space-3);
+  color: color-mix(in srgb, var(--text) 45%, transparent);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+}
+.sidebar__credit strong {
+  color: var(--gold-light);
+  font-weight: 600;
 }

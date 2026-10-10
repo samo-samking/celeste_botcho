@@ -4,6 +4,13 @@ export const ROUTES = {
   home: '/',
   products: '/produits',
   categories: '/categories',
+  settings: '/configuration',
+  orders: '/commandes',
+  messages: '/messages',
+  delivery: '/livraison',
+  promotions: '/promotions',
+  admins: '/comptes',
+  journal: '/journal',
 } as const;
 
 type Listener = (path: string) => void;

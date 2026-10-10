@@ -63,6 +63,10 @@
   color: var(--color-text-muted);
 }
 
-.steps__cta {
+.steps__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
   margin-block-start: var(--space-6);
 }

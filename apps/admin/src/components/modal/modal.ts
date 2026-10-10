@@ -75,6 +75,9 @@ export function openDialog(
   draw(content);
   dialog.addEventListener('close', () => {
     onClose?.();
+    // les notifications placées dans ce panneau reviennent dans la page avant sa suppression
+    const toasts = dialog.querySelector('.toasts');
+    if (toasts) document.body.append(toasts);
     dialog.remove();
   });
   // Échap : on remplace la fermeture immédiate du navigateur par la fermeture animée
@@ -86,6 +89,13 @@ export function openDialog(
   dialog.addEventListener('click', (e) => {
     if (e.target === dialog) void userClose();
   });
+  // panneau : seul son contenu défile ; si le navigateur le fait défiler (focus sur un élément
+  // hors de la zone visible), on le remet en place
+  if (panel) {
+    dialog.addEventListener('scroll', () => {
+      if (dialog.scrollTop || dialog.scrollLeft) dialog.scrollTo(0, 0);
+    });
+  }
   dialog.showModal();
 
   return { update: draw, close: requestClose, dismiss: () => void userClose() };
@@ -122,5 +132,71 @@ export function confirmDialog({
       `,
       { onClose: () => resolve(confirmed) },
     );
+  });
+}
+
+/** Saisie d'un texte (ex. motif d'annulation) : résout le texte, ou null si la personne annule. */
+export function promptDialog({
+  title,
+  message,
+  label,
+  placeholder = '',
+  confirmLabel = 'Valider',
+  danger = false,
+  required = true,
+  suggestions = [],
+}: {
+  title: string;
+  message: string;
+  label: string;
+  placeholder?: string;
+  confirmLabel?: string;
+  danger?: boolean;
+  required?: boolean;
+  /** Réponses courantes proposées en un clic. */
+  suggestions?: string[];
+}): Promise<string | null> {
+  return new Promise((resolve) => {
+    let value = '';
+    let result: string | null = null;
+    let showError = false;
+    const submit = () => {
+      if (required && !value.trim()) {
+        showError = true;
+        draw();
+        document.getElementById('prompt-input')?.focus();
+        return;
+      }
+      result = value.trim();
+      handle.close();
+    };
+    const body = () => html`
+      <form class="prompt" novalidate @submit=${(e: SubmitEvent) => { e.preventDefault(); submit(); }}>
+        <p class="prompt__message">${message}</p>
+        <label class="field__label" for="prompt-input">${label}</label>
+        <textarea id="prompt-input" class="field__input field__input--multiline prompt__input" rows="3" maxlength="300" placeholder=${placeholder}
+          aria-invalid=${showError ? 'true' : 'false'}
+          @input=${(e: InputEvent) => { value = (e.target as HTMLTextAreaElement).value; if (showError) { showError = false; draw(); } }}>${value}</textarea>
+        ${showError ? html`<p class="field__error">Ce champ est obligatoire.</p>` : nothing}
+        ${suggestions.length
+          ? html`<div class="prompt__chips">${suggestions.map(
+              (s) => html`<button class="chip" type="button" @click=${() => {
+                value = s;
+                showError = false;
+                const input = document.getElementById('prompt-input') as HTMLTextAreaElement | null;
+                if (input) input.value = s;
+                draw();
+              }}>${s}</button>`,
+            )}</div>`
+          : nothing}
+        <div class="modal__actions">
+          <button class="btn btn--secondary" type="button" @click=${() => handle.close()}>Annuler</button>
+          <button class="btn ${danger ? 'btn--danger' : 'btn--primary'}" type="submit">${confirmLabel}</button>
+        </div>
+      </form>
+    `;
+    const draw = () => handle.update(body());
+    const handle = openDialog(title, body(), { onClose: () => resolve(result) });
+    queueMicrotask(() => document.getElementById('prompt-input')?.focus());
   });
 }

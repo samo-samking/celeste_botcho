@@ -15,14 +15,24 @@ let items: Item[] = [];
 let nextId = 1;
 let host: HTMLElement | null = null;
 
+/** Un panneau ou une boîte de dialogue modale est toujours dessiné au premier plan : des notifications
+ *  restées dans la page s'afficheraient DERRIÈRE lui, donc invisibles. On les place dans la dernière
+ *  boîte ouverte (ou dans la page s'il n'y en a pas). */
+function placeHost() {
+  // un panneau en train de se fermer va disparaître : il ne doit pas emporter les notifications
+  const topDialog = [...document.querySelectorAll<HTMLDialogElement>('dialog[open]:not(.is-closing)')].at(-1);
+  const parent = topDialog ?? document.body;
+  if (host!.parentElement !== parent) parent.append(host!);
+}
+
 function draw() {
   if (!host) {
     host = document.createElement('div');
     host.className = 'toasts';
     host.setAttribute('role', 'status');
     host.setAttribute('aria-live', 'polite');
-    document.body.append(host);
   }
+  placeHost();
   render(
     html`${items.map(
       (t) => html`

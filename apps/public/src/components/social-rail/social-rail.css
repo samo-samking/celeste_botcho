@@ -1,0 +1,89 @@
+/* Barre des réseaux sociaux : fixée à gauche, centrée en hauteur, entre deux traits dorés.
+   Seulement quand la marge à gauche du contenu (1280 px max) est assez large pour elle. */
+.social-rail {
+  display: none;
+}
+
+@media (min-width: 1400px) {
+  .social-rail {
+    position: fixed;
+    inset-block-start: 50%;
+    inset-inline-start: var(--space-4);
+    z-index: calc(var(--z-header) - 1); /* sous l'en-tête, le panier et les fenêtres */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    transform: translateY(-50%);
+    transition:
+      opacity 300ms var(--ease-out),
+      transform 300ms var(--ease-out),
+      visibility 0s linear 0s;
+  }
+  /* pendant le défilement : elle glisse vers la gauche et s'efface (plus cliquable ni atteignable au clavier) */
+  .social-rail.is-hidden {
+    visibility: hidden;
+    opacity: 0;
+    transform: translate(-24px, -50%);
+    transition:
+      opacity 250ms var(--ease-out),
+      transform 250ms var(--ease-out),
+      visibility 0s linear 250ms;
+  }
+  /* traits dorés au-dessus et en dessous */
+  .social-rail::before,
+  .social-rail::after {
+    content: '';
+    inline-size: 1px;
+    block-size: 36px;
+    background: linear-gradient(to bottom, transparent, var(--gold));
+    opacity: 0.6;
+  }
+  .social-rail::after {
+    background: linear-gradient(to top, transparent, var(--gold));
+  }
+  .social-rail ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .social-rail a {
+    display: grid;
+    place-items: center;
+    inline-size: 46px;
+    block-size: 46px;
+    border: 1px solid color-mix(in srgb, var(--gold) 22%, transparent);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--bg) 82%, white 5%);
+    box-shadow: 0 10px 24px rgb(0 0 0 / 0.35);
+    color: var(--text);
+    font-size: 1.15rem;
+    transition:
+      background-color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out),
+      transform var(--duration-fast) var(--ease-out);
+  }
+  .social-rail a:hover {
+    border-color: var(--gold);
+    background: var(--gold);
+    color: var(--bg);
+    transform: translateX(3px);
+  }
+  .social-rail a:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
+}
+
+@media (min-width: 1400px) and (prefers-reduced-motion: reduce) {
+  .social-rail a:hover {
+    transform: none;
+  }
+  .social-rail.is-hidden {
+    transform: translateY(-50%); /* simple fondu, sans glissement */
+  }
+}

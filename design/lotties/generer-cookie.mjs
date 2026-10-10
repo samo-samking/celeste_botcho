@@ -1,7 +1,7 @@
-// GÃ©nÃ¨re l'animation Lottie du bandeau cookies : un cookie caramel qui rebondit, se fait croquer
-// (croc + miettes), puis rapetisse et revient. Boucle de 3 s, 200 Ã— 200, fond transparent, vectoriel pur
-// (compatible avec le lecteur lottie Â« light Â» : ni expressions, ni effets, ni images).
-//   node design/lotties/generer-cookie.mjs  â†’  packages/shared/src/lotties/cookie.json
+// Génère l'animation Lottie du bandeau cookies : un cookie caramel qui rebondit, se fait croquer
+// (croc + miettes), puis rapetisse et revient. Boucle de 3 s, 200 × 200, fond transparent, vectoriel pur
+// (compatible avec le lecteur lottie « light » : ni expressions, ni effets, ni images).
+//   node design/lotties/generer-cookie.mjs  →  packages/shared/src/lotties/cookie.json
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -9,12 +9,12 @@ const OUT = join(import.meta.dirname, '../../packages/shared/src/lotties/cookie.
 const FPS = 30;
 const END = 90; // 3 s
 
-// Couleurs de la charte (0 â†’ 1)
+// Couleurs de la charte (0 → 1)
 const hex = (h) => [1, 3, 5].map((i) => +(parseInt(h.slice(i, i + 2), 16) / 255).toFixed(4)).concat(1);
 const C = {
-  dough: hex('#d39a3a'), // pÃ¢te dorÃ©e
+  dough: hex('#d39a3a'), // pâte dorée
   edge: hex('#a9581f'), // bord caramel
-  chip: hex('#5a2c0d'), // pÃ©pites
+  chip: hex('#5a2c0d'), // pépites
   shine: hex('#ffd95a'), // reflet
   crumb: hex('#c98a00'),
   sparkle: hex('#ffd95a'),
@@ -23,7 +23,7 @@ const C = {
 // --- Briques Lottie -------------------------------------------------------------------------
 const still = (k) => ({ a: 0, k });
 const ease = { i: { x: [0.45], y: [1] }, o: { x: [0.55], y: [0] } };
-/** PropriÃ©tÃ© animÃ©e : [[image, valeur], â€¦] ; Â« hold Â» = changement instantanÃ©. */
+/** Propriété animée : [[image, valeur], …] ; « hold » = changement instantané. */
 const anim = (keys, { hold = false } = {}) => ({
   a: 1,
   k: keys.map(([t, v], idx) => {
@@ -46,7 +46,7 @@ const fill = (c, o = 100) => ({ ty: 'fl', c: still(c), o: still(o), r: 1 });
 const stroke = (c, w) => ({ ty: 'st', c: still(c), o: still(100), w: still(w), lc: 2, lj: 2 });
 const group = (nm, items, tr) => ({ ty: 'gr', nm, it: [...items, tr ?? transform()] });
 
-/** Cercle en courbes de BÃ©zier (pour le masque Â« croc Â»). */
+/** Cercle en courbes de Bézier (pour le masque « croc »). */
 function circlePath(cx, cy, r) {
   const k = 0.5523 * r;
   return {
@@ -73,19 +73,19 @@ const cookie = layer(
   3,
   'Cookie',
   {
-    // pop d'entrÃ©e, petit rebond, Ã©crasement au croc, puis disparition avant la boucle
+    // pop d'entrée, petit rebond, écrasement au croc, puis disparition avant la boucle
     p: anim([[0, [100, 104, 0]], [14, [100, 96, 0]], [24, [100, 101, 0]], [44, [100, 98, 0]], [66, [100, 102, 0]], [90, [100, 104, 0]]]),
     s: anim([[0, [1, 1, 100]], [9, [108, 108, 100]], [14, [100, 100, 100]], [24, [100, 100, 100]], [27, [107, 93, 100]], [31, [97, 103, 100]], [35, [100, 100, 100]], [74, [100, 100, 100]], [84, [1, 1, 100]], [90, [1, 1, 100]]]), // jamais 0 : le masque « croc » inverse cette échelle
     r: anim([[0, -8], [45, 6], [84, -4], [90, -8]]),
   },
   [
     group('Reflet', [ellipse(-18, -30, 34, 12), fill(C.shine, 45)]),
-    group('PÃ©pites', CHIPS.map(([x, y, w, h]) => ellipse(x, y, w, h)).concat(fill(C.chip))),
-    group('PÃ¢te', [ellipse(0, 0, 120, 120), fill(C.dough), stroke(C.edge, 5)]),
+    group('Pépites', CHIPS.map(([x, y, w, h]) => ellipse(x, y, w, h)).concat(fill(C.chip))),
+    group('Pâte', [ellipse(0, 0, 120, 120), fill(C.dough), stroke(C.edge, 5)]),
   ],
   {
     hasMask: true,
-    // le croc : un disque soustrait en haut Ã  droite, qui apparaÃ®t d'un coup au moment du croc
+    // le croc : un disque soustrait en haut à droite, qui apparaît d'un coup au moment du croc
     masksProperties: [
       { nm: 'Croc', inv: false, mode: 's', pt: still(circlePath(46, -46, 25)), o: anim([[0, 0], [26, 100], [90, 100]], { hold: true }), x: still(0) },
     ],
@@ -106,7 +106,7 @@ const crumbs = layer(2, 'Miettes', {}, [
   crumb('Miette 4', 6, [146, 50], [168, 128], 29),
 ], { ks: { a: still([0, 0, 0]), p: still([0, 0, 0]), s: still([100, 100, 100]), r: still(0), o: still(100) } });
 
-// --- Petites Ã©tincelles au moment du croc --------------------------------------------------------
+// --- Petites étincelles au moment du croc --------------------------------------------------------
 const sparkle = (nm, x, y, start) =>
   group(nm, [
     { ty: 'sr', sy: 1, d: 1, pt: still(4), p: still([0, 0]), r: still(0), ir: still(2), is: still(0), or: still(7), os: still(0) },
@@ -115,10 +115,10 @@ const sparkle = (nm, x, y, start) =>
     p: still([x, y]),
     s: anim([[0, [0, 0]], [start, [0, 0]], [start + 6, [110, 110]], [start + 14, [0, 0]]]),
   }));
-const sparkles = layer(1, 'Ã‰tincelles', { p: still([0, 0, 0]) }, [
-  sparkle('Ã‰tincelle 1', 170, 40, 25),
-  sparkle('Ã‰tincelle 2', 158, 22, 28),
-  sparkle('Ã‰tincelle 3', 182, 70, 30),
+const sparkles = layer(1, 'Étincelles', { p: still([0, 0, 0]) }, [
+  sparkle('Étincelle 1', 170, 40, 25),
+  sparkle('Étincelle 2', 158, 22, 28),
+  sparkle('Étincelle 3', 182, 70, 30),
 ]);
 
 const animation = {
@@ -128,12 +128,12 @@ const animation = {
   op: END,
   w: 200,
   h: 200,
-  nm: 'Cookie croquÃ©',
+  nm: 'Cookie croqué',
   ddd: 0,
   assets: [],
-  layers: [sparkles, crumbs, cookie], // le premier calque est dessinÃ© au-dessus
+  layers: [sparkles, crumbs, cookie], // le premier calque est dessiné au-dessus
   markers: [],
 };
 
 writeFileSync(OUT, JSON.stringify(animation));
-console.log(`âœ“ ${OUT} (${(JSON.stringify(animation).length / 1024).toFixed(1)} Ko)`);
+console.log(`✓ ${OUT} (${(JSON.stringify(animation).length / 1024).toFixed(1)} Ko)`);

@@ -11,6 +11,8 @@ interface ImportMetaEnv {
   readonly VITE_RECAPTCHA_SITE_KEY: string;
   readonly VITE_CLOUDINARY_CLOUD_NAME: string;
   readonly VITE_CLOUDINARY_UPLOAD_PRESET: string;
+  /** Clé publique VAPID (notifications push, Firebase Cloud Messaging). */
+  readonly VITE_FIREBASE_VAPID_KEY?: string;
   readonly VITE_USE_EMULATORS: string;
 }
 

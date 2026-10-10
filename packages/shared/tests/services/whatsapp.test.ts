@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildContactLink } from '../../src/services/whatsapp';
+import { buildContactLink, buildCustomerLink } from '../../src/services/whatsapp';
 
 describe('whatsapp', () => {
   it('buildContactLink sans texte', () => {
@@ -19,5 +19,8 @@ describe('whatsapp', () => {
     const url = buildContactLink('225', 'Merci 🙏');
     expect(decodeURIComponent(url.split('text=')[1]!)).toBe('Merci 🙏');
   });
-  it.todo('buildOrderLink, buildProductLink, buildCustomerLink');
+  it('buildCustomerLink écrit au numéro de la cliente', () => {
+    expect(buildCustomerLink('+2250707000001', 'Bonjour')).toBe('https://wa.me/2250707000001?text=Bonjour');
+  });
+  it.todo('buildOrderLink, buildProductLink (avec le formulaire de commande)');
 });

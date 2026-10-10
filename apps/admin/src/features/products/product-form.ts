@@ -12,6 +12,7 @@ import { buildSku, publicationIssues } from '@celeste/shared/domain/catalog';
 import { SEO_DESCRIPTION_MAX, SEO_TITLE_MAX, type ProductInput } from '@celeste/shared/validation/product.validation';
 import { formatFcfa } from '@celeste/shared/utils/format-fcfa';
 import { slugify } from '@celeste/shared/utils/slug';
+import { cld } from '@celeste/shared/services/images';
 import { formField, switchField } from '../../components/form-field/form-field';
 import { ImageUploader } from '../../components/image-uploader/image-uploader';
 import { confirmDialog, openDialog } from '../../components/modal/modal';
@@ -28,6 +29,8 @@ interface VariantRow {
   price: string;
   stock: string;
   isActive: boolean;
+  /** URL de la photo du format (une des photos du produit), null = photo principale. */
+  image: string | null;
 }
 
 const SECTIONS = [
@@ -53,53 +56,77 @@ function scrollPanelTo(el: HTMLElement, align: 'start' | 'center') {
   body.scrollTo({ top: Math.max(0, top), behavior: reduced ? 'auto' : 'smooth' });
 }
 
-export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product>) {
+/**
+ * Ouvre le formulaire : nouveau produit, modification (`previous`) ou copie d'un produit existant
+ * (`copyOf` : nouveau brouillon prérempli, nom « (copie) », adresse et SKU régénérés).
+ */
+export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product>, copyOf?: WithId<Product>) {
+  const source = previous ?? copyOf;
+  // copie : premier nom et première adresse libres (« (copie) », « (copie 2) »…)
+  let copyName = '';
+  if (copyOf) {
+    const slugs = new Set(vm.list.value.map((p) => p.slug));
+    for (let n = 1; ; n++) {
+      const suffix = n === 1 ? 'copie' : `copie ${n}`;
+      copyName = `${copyOf.name.slice(0, 80 - suffix.length - 3)} (${suffix})`;
+      if (!slugs.has(slugify(copyName))) break;
+    }
+  }
   const form = {
-    name: previous?.name ?? '',
-    slug: previous?.slug ?? '',
-    categoryId: previous?.categoryId ?? (vm.categoryId.value || vm.categories.value[0]?.id || ''),
-    shortDescription: previous?.shortDescription ?? '',
-    description: previous?.description ?? '',
-    composition: previous?.composition ?? '',
-    usage: previous?.usage ?? '',
-    precautions: previous?.precautions ?? '',
-    isFeatured: previous?.isFeatured ?? false,
-    seoTitle: previous?.seo?.title ?? '',
-    seoDescription: previous?.seo?.description ?? '',
+    name: copyOf ? copyName : (previous?.name ?? ''),
+    slug: copyOf ? slugify(copyName) : (previous?.slug ?? ''),
+    categoryId: source?.categoryId ?? (vm.categoryId.value || vm.categories.value[0]?.id || ''),
+    shortDescription: source?.shortDescription ?? '',
+    description: source?.description ?? '',
+    composition: source?.composition ?? '',
+    usage: source?.usage ?? '',
+    precautions: source?.precautions ?? '',
+    isFeatured: copyOf ? false : (previous?.isFeatured ?? false),
+    seoTitle: copyOf ? '' : (previous?.seo?.title ?? ''),
+    seoDescription: copyOf ? '' : (previous?.seo?.description ?? ''),
   };
-  let rows: VariantRow[] = (previous?.variants ?? []).map((v) => ({
+  let rows: VariantRow[] = (source?.variants ?? []).map((v) => ({
     key: ++rowKey,
-    sku: v.sku,
-    skuLocked: true,
+    sku: copyOf ? '' : v.sku,
+    skuLocked: !copyOf, // copie : SKU recalculés à partir du nouveau nom
     label: v.label,
     quantity: String(v.quantity),
     price: String(v.price),
     stock: v.stock === null ? '' : String(v.stock),
     isActive: v.isActive,
+    image: v.image ?? null,
   }));
   if (!rows.length) rows = [newRow()];
   let slugEdited = !!previous;
   let errors: Record<string, string> = {};
   let saving: ProductStatus | null = null;
+  /** Erreur technique à l'enregistrement (réseau, droits), affichée dans le panneau. */
+  let saveError: string | null = null;
+  /** Titre du récapitulatif : manques pour publier, ou erreurs à l'enregistrement. */
+  let summaryFor: 'publish' | 'save' = 'save';
 
-  const uploader = new ImageUploader({ id: 'product-photos', folder: 'celeste/produits', max: MAX_IMAGES, withAlt: true, initial: previous?.images ?? [] });
+  const uploader = new ImageUploader({ id: 'product-photos', folder: 'celeste/produits', max: MAX_IMAGES, withAlt: true, initial: source?.images ?? [] });
 
   function newRow(): VariantRow {
-    return { key: ++rowKey, sku: '', skuLocked: false, label: '', quantity: '', price: '', stock: '', isActive: true };
+    return { key: ++rowKey, sku: '', skuLocked: false, label: '', quantity: '', price: '', stock: '', isActive: true, image: null };
   }
   const refreshSkus = () =>
     rows.forEach((r) => {
-      if (!r.skuLocked) r.sku = form.name.trim() && r.quantity ? buildSku(form.name, Number(r.quantity)) : '';
+      // quantité vide = 1 (« Pot », « Flacon ») : le SKU se génère quand même (…-001)
+      if (!r.skuLocked) r.sku = form.name.trim() ? buildSku(form.name, r.quantity ? Number(r.quantity) : 1) : '';
     });
+
+  if (copyOf) refreshSkus();
 
   const variants = (): Variant[] =>
     rows.map((r) => ({
       sku: r.sku.trim().toUpperCase(),
       label: r.label.trim(),
-      quantity: r.quantity === '' ? 0 : Number(r.quantity),
+      quantity: r.quantity === '' ? 1 : Number(r.quantity), // vide = 1 unité
       price: r.price === '' ? 0 : Number(r.price),
       stock: r.stock.trim() === '' ? null : Number(r.stock),
       isActive: r.isActive,
+      image: r.image && uploader.photos.some((p) => p.url === r.image) ? r.image : null,
     }));
 
   const input = (status: ProductStatus): ProductInput => ({
@@ -122,10 +149,24 @@ export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product
   const snapshot = () =>
     JSON.stringify({
       form,
-      rows: rows.map((r) => [r.sku, r.label, r.quantity, r.price, r.stock, r.isActive]),
+      rows: rows.map((r) => [r.sku, r.label, r.quantity, r.price, r.stock, r.isActive, r.image]),
       photos: uploader.photos,
     });
-  const initial = snapshot();
+  const initial = copyOf ? '' : snapshot(); // une copie n'est pas encore enregistrée
+
+  /**
+   * Fiches créées avant le lien photo ↔ format : si les photos suivent les formats (une par format,
+   * éventuellement précédées d'une photo d'ensemble), on propose ce rapprochement, à vérifier.
+   */
+  let suggested = false;
+  if (rows.length > 1 && rows.every((r) => !r.image)) {
+    const photos = uploader.photos;
+    const offset = photos.length === rows.length + 1 ? 1 : photos.length === rows.length ? 0 : -1;
+    if (offset >= 0) {
+      rows.forEach((r, i) => (r.image = photos[i + offset]!.url));
+      suggested = true;
+    }
+  }
   const dirty = () => snapshot() !== initial;
 
   const issues = () =>
@@ -138,24 +179,53 @@ export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product
       precautions: form.precautions,
     });
 
+  /** « Publier » alors qu'il manque quelque chose : on dit quoi, champ par champ, au lieu de ne rien faire. */
+  const MISSING_FIELDS: Record<string, [string, string]> = {
+    'un nom': ['name', 'Indiquez le nom du produit.'],
+    'une catégorie': ['categoryId', 'Choisissez une catégorie.'],
+    'au moins une photo': ['images', 'Ajoutez au moins une photo (envoi terminé).'],
+    'au moins un format actif': ['variants', 'Ajoutez au moins un format actif avec un prix.'],
+    'la composition': ['composition', 'Renseignez la composition.'],
+    'les précautions': ['precautions', 'Renseignez les précautions et contre-indications.'],
+  };
+  function explainMissing() {
+    saveError = null;
+    summaryFor = 'publish';
+    errors = Object.fromEntries(issues().map((m) => MISSING_FIELDS[m] ?? ['status', `Il manque : ${m}.`]));
+    draw();
+    const summary = document.querySelector<HTMLElement>('.modal .form-error');
+    if (summary) {
+      scrollPanelTo(summary, 'center');
+      summary.focus({ preventScroll: true });
+    }
+    toast.error('Impossible de publier pour l’instant : voir ce qui manque au-dessus des boutons.');
+  }
+
   async function submit(status: ProductStatus) {
     if (uploader.busy) {
       toast.info("Patientez : des photos sont encore en cours d'envoi.");
       return;
     }
     saving = status;
+    summaryFor = 'save';
     errors = {};
+    saveError = null;
     draw();
+    // le récapitulatif des erreurs est juste au-dessus des boutons : on l'amène à l'écran
+    const showSummary = () => {
+      const summary = document.querySelector<HTMLElement>('.modal .form-error');
+      if (!summary) return;
+      scrollPanelTo(summary, 'center');
+      summary.focus({ preventScroll: true });
+    };
     try {
       const result = await vm.save(input(status), previous);
       saving = null;
       if (result) {
         errors = result;
         draw();
-        const first = dialog && document.querySelector<HTMLElement>('.modal [aria-invalid="true"], .modal .form-error');
-        if (first) scrollPanelTo(first, 'center');
-        first?.focus?.({ preventScroll: true });
-        toast.error('Certains champs sont à corriger.');
+        showSummary();
+        toast.error('Certains champs sont à corriger : voir le récapitulatif au-dessus des boutons.');
         return;
       }
       const name = form.name.trim();
@@ -171,8 +241,10 @@ export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product
       dialog.close();
     } catch (e) {
       saving = null;
+      saveError = errorMessage(e);
       draw();
-      toast.error(errorMessage(e));
+      showSummary();
+      toast.error(saveError);
     }
   }
 
@@ -261,6 +333,32 @@ export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product
     })}
   `;
 
+  /** Photo montrée sur la boutique quand ce format est choisi : une des photos du produit. */
+  const photoPicker = (r: VariantRow, i: number) => {
+    const photos = uploader.photos;
+    if (!photos.length) return nothing;
+    const choose = (url: string | null) => {
+      r.image = url;
+      suggested = false;
+      draw();
+    };
+    return html`
+      <div class="vr__photos" role="group" aria-label="Photo du format ${i + 1}">
+        <span class="vr__photos-label">Photo du format</span>
+        <button class="vr__photo vr__photo--none ${r.image ? '' : 'is-selected'}" type="button" aria-pressed=${r.image ? 'false' : 'true'}
+          title="Photo principale du produit" @click=${() => choose(null)}>Principale</button>
+        ${photos.map(
+          (p, n) => html`
+            <button class="vr__photo ${r.image === p.url ? 'is-selected' : ''}" type="button" aria-pressed=${r.image === p.url ? 'true' : 'false'}
+              title=${p.alt || `Photo ${n + 1}`} @click=${() => choose(p.url)}>
+              <img src=${cld(p.url, 'c_fill,ar_1:1,w_96')} alt="Photo ${n + 1}${p.alt ? ` : ${p.alt}` : ''}" loading="lazy" />
+            </button>
+          `,
+        )}
+      </div>
+    `;
+  };
+
   const variantRow = (r: VariantRow, i: number) => {
     const err = (f: string) => errors[`variants.${i}.${f}`];
     const fieldErr = (f: string) => (err(f) ? html`<span class="vr__error">${err(f)}</span>` : nothing);
@@ -284,7 +382,7 @@ export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product
         </div>
         <div class="vr__cell">
           <label for="v-${r.key}-qty">Quantité</label>
-          <input id="v-${r.key}-qty" class="vr__input" type="text" inputmode="numeric" placeholder="30" .value=${live(r.quantity)}
+          <input id="v-${r.key}-qty" class="vr__input" type="text" inputmode="numeric" placeholder="1" .value=${live(r.quantity)}
             aria-invalid=${err('quantity') ? 'true' : 'false'}
             @input=${(e: InputEvent) => {
               r.quantity = digits((e.target as HTMLInputElement).value);
@@ -319,7 +417,8 @@ export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product
             aria-invalid=${err('sku') ? 'true' : 'false'}
             @input=${(e: InputEvent) => {
               r.sku = (e.target as HTMLInputElement).value.toUpperCase();
-              r.skuLocked = true;
+              r.skuLocked = r.sku.trim() !== ''; // SKU effacé : il se régénère automatiquement
+              if (!r.skuLocked) refreshSkus();
               draw();
             }} />
           ${fieldErr('sku')}
@@ -338,11 +437,15 @@ export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product
             ${icon(trash, { label: `Supprimer le format ${i + 1}` })}
           </button>
         </div>
+        ${photoPicker(r, i)}
       </li>
     `;
   };
 
   const formats = () => html`
+    ${suggested
+      ? html`<p class="pf-suggest">${icon(alertCircle)}<span>Chaque format a reçu la photo qui lui correspond dans l’ordre de vos photos. Vérifiez sous chaque format, puis enregistrez.</span></p>`
+      : nothing}
     <ol class="vr-list">${rows.map(variantRow)}</ol>
     ${errors.variants ? html`<p class="field__error">${errors.variants}</p>` : nothing}
     ${rows.length < MAX_VARIANTS
@@ -357,6 +460,7 @@ export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product
   const sante = () => html`
     ${formField({
       id: 'product-composition',
+      error: errors.composition,
       label: 'Composition',
       value: form.composition,
       multiline: true,
@@ -383,6 +487,7 @@ export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product
     })}
     ${formField({
       id: 'product-precautions',
+      error: errors.precautions,
       label: 'Précautions et contre-indications',
       value: form.precautions,
       multiline: true,
@@ -440,6 +545,70 @@ export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product
     ${seoPreview()}
   `;
 
+  // --- Récapitulatif des erreurs, juste au-dessus des boutons ------------------------------
+  const FIELD_LABELS: Record<string, [string, string]> = {
+    name: ['Nom du produit', 'product-name'],
+    slug: ['Adresse sur la boutique', 'product-slug'],
+    categoryId: ['Catégorie', 'product-category'],
+    shortDescription: ['Description courte', 'product-short'],
+    images: ['Photos', 'pf-photos'],
+    variants: ['Formats', 'pf-formats'],
+    'seo.title': ['Titre pour Google', 'seo-title'],
+    'seo.description': ['Description pour Google', 'seo-description'],
+    status: ['Publication', 'pf-sante'],
+    composition: ['Composition', 'product-composition'],
+    precautions: ['Précautions', 'product-precautions'],
+  };
+  const VARIANT_FIELDS: Record<string, [string, string]> = {
+    label: ['Libellé', 'label'],
+    quantity: ['Quantité', 'qty'],
+    price: ['Prix', 'price'],
+    stock: ['Stock', 'stock'],
+    sku: ['SKU', 'sku'],
+  };
+  /** [libellé lisible, id de l'élément à atteindre, message] pour chaque erreur. */
+  const errorList = (): [string, string, string][] =>
+    Object.entries(errors).map(([key, message]) => {
+      const v = key.match(/^variants\.(\d+)\.(\w+)$/);
+      if (v) {
+        const [label, suffix] = VARIANT_FIELDS[v[2]!] ?? [v[2]!, 'label'];
+        return [`Format ${Number(v[1]) + 1} · ${label}`, `v-${rows[Number(v[1])]?.key}-${suffix}`, message];
+      }
+      const [label, id] = FIELD_LABELS[key] ?? [key, 'pf-infos'];
+      return [label, id, message];
+    });
+
+  const errorSummary = () => {
+    const list = errorList();
+    if (!list.length && !saveError) return nothing;
+    return html`
+      <div class="form-error" role="alert" tabindex="-1">
+        ${icon(alertCircle)}
+        <div>
+          <strong>${saveError
+            ? "L'enregistrement a échoué"
+            : summaryFor === 'publish'
+              ? `${list.length > 1 ? `${list.length} éléments manquent` : 'Il manque un élément'} pour publier`
+              : `${list.length > 1 ? `${list.length} points à corriger` : 'Un point à corriger'} avant d'enregistrer`}</strong>
+          ${saveError ? html`<p>${saveError}</p>` : nothing}
+          <ul>
+            ${list.map(
+              ([label, id, message]) => html`<li>
+                <a href="#${id}" @click=${(e: MouseEvent) => {
+                  e.preventDefault();
+                  const target = document.getElementById(id);
+                  if (!target) return;
+                  scrollPanelTo(target, 'center');
+                  target.focus?.({ preventScroll: true });
+                }}>${label}</a> : ${message}
+              </li>`,
+            )}
+          </ul>
+        </div>
+      </div>
+    `;
+  };
+
   // --- Ensemble ------------------------------------------------------------------------
   const content = () => {
     const missing = issues();
@@ -463,7 +632,7 @@ export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product
           html`${uploader.template()}${errors.images ? html`<p class="field__error">${errors.images}</p>` : nothing}`,
           `De 1 à ${MAX_IMAGES} photos. La première est la photo principale. Décrivez chaque photo en quelques mots (pour les personnes malvoyantes et pour Google).`,
         )}
-        ${section('formats', 'Formats et prix', formats(), 'Un format par contenance (ex. 30, 55, 115 boules). Laissez le stock vide si vous ne le suivez pas ; « 0 » = rupture.')}
+        ${section('formats', 'Formats et prix', formats(), 'Un format par contenance (ex. 30, 55, 115 boules). Choisissez la photo de chaque format : elle s’affiche quand la cliente clique dessus. Laissez le stock vide si vous ne le suivez pas ; « 0 » = rupture.')}
         ${section('sante', 'Santé et usage', sante(), 'Ces informations protègent vos clientes et sont exigées avant publication. Aucune promesse médicale.')}
         ${section(
           'avant',
@@ -481,8 +650,8 @@ export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product
         )}
         ${section('seo', 'Référencement', seo(), 'Comment le produit apparaît dans Google et dans les aperçus de liens WhatsApp.')}
 
-        ${errors.status ? html`<p class="form-error" role="alert" tabindex="-1">${icon(alertCircle)} ${errors.status}</p>` : nothing}
-        ${missing.length && status !== 'published'
+        ${errorSummary()}
+        ${missing.length && status !== 'published' && !Object.keys(errors).length && !saveError
           ? html`<p class="pf-missing">${icon(alertCircle)}<span>Pour publier, il manque : <strong>${missing.join(', ')}</strong>.</span></p>`
           : nothing}
 
@@ -501,7 +670,8 @@ export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product
                 <button class="btn btn--secondary" type="button" ?disabled=${!!saving} @click=${() => submit(status)}>
                   ${saving === status ? 'Enregistrement…' : status === 'archived' ? 'Enregistrer' : 'Enregistrer le brouillon'}
                 </button>
-                <button class="btn btn--primary" type="button" ?disabled=${!!saving || missing.length > 0} @click=${() => submit('published')}
+                <button class="btn btn--primary ${missing.length ? 'is-incomplete' : ''}" type="button" ?disabled=${!!saving}
+                  @click=${() => (missing.length ? explainMissing() : submit('published'))}
                   title=${missing.length ? `Il manque : ${missing.join(', ')}` : ''}>
                   ${saving === 'published' ? 'Publication…' : 'Publier'}
                 </button>
@@ -511,7 +681,8 @@ export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product
     `;
   };
 
-  const dialog = openDialog(previous ? `Modifier « ${previous.name} »` : 'Nouveau produit', content(), {
+  const title = previous ? `Modifier « ${previous.name} »` : copyOf ? `Copie de « ${copyOf.name} »` : 'Nouveau produit';
+  const dialog = openDialog(title, content(), {
     panel: true,
     wide: true,
     beforeClose: () =>
@@ -532,5 +703,9 @@ export function openProductForm(vm: ProductsViewModel, previous?: WithId<Product
     void uploader.items.value; // progression et fin des envois de photos
     draw();
   });
-  if (!previous) document.querySelector<HTMLInputElement>('.modal #product-name')?.focus();
+  if (!previous) {
+    const name = document.querySelector<HTMLInputElement>('.modal #product-name');
+    name?.focus();
+    if (copyOf) name?.select(); // on renomme la copie tout de suite
+  }
 }

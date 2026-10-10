@@ -1,5 +1,5 @@
-/* Vitrine des catÃ©gories : une section d'un Ã©cran, tout change sur place.
-   Couleurs animables grÃ¢ce Ã  @property (sinon elles changent d'un coup, sans gÃªner la lecture). */
+/* Vitrine des catégories : une section d'un écran, tout change sur place.
+   Couleurs animables grâce à @property (sinon elles changent d'un coup, sans gêner la lecture). */
 @property --tint {
   syntax: '<color>';
   inherits: true;
@@ -18,15 +18,15 @@
 
 .vitrine {
   --k: 1; /* amplitude des trajets (0,5 sur mobile) */
-  /* position de la vignette du suivant, en part de la scÃ¨ne : coin bas-droit, visible Ã  toutes les tailles
-     (les 170 % / 75 % du cahier la plaÃ§aient hors de l'Ã©cran avec une scÃ¨ne de cette taille) */
-  --next-x: 72%;
-  --next-y: 58%;
+  /* position de la vignette du suivant, en part de la scène : coin bas-droit, à l'intérieur de la scène
+     (la carte du produit occupe la colonne de droite) */
+  --next-x: 44%;
+  --next-y: 44%;
   --ease-relay: cubic-bezier(0.65, 0, 0.35, 1);
   position: relative;
-  block-size: 100vh;
-  block-size: 100svh;
-  min-block-size: 600px;
+  /* un écran au minimum ; si les textes sont longs ou l'écran bas, la section s'allonge
+     au lieu de rogner les flèches ou de faire déborder le titre sur les onglets */
+  min-block-size: max(600px, 100svh);
   overflow: hidden;
   padding-block-start: var(--header-h);
   background:
@@ -41,13 +41,15 @@
 
 .vitrine__inner {
   display: grid;
-  grid-template-columns: minmax(300px, 34%) minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(260px, 30%) minmax(0, 1fr) clamp(300px, 25vw, 350px);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   grid-template-areas:
-    'tabs tabs'
-    'copy stage'
-    'nav nav';
-  block-size: 100%;
+    'label label label'
+    'tabs tabs tabs'
+    'copy stage card'
+    'nav nav nav';
+  column-gap: var(--space-6);
+  min-block-size: calc(max(600px, 100svh) - var(--header-h));
   inline-size: min(100% - 2 * var(--space-5), 1280px);
   margin-inline: auto;
   padding-block: var(--space-4) var(--space-5);
@@ -61,47 +63,72 @@
   border-radius: var(--radius-lg);
 }
 
-/* --- Onglets ----------------------------------------------------------- */
+/* --- Onglets : capsule sombre, pastille à la couleur de la catégorie qui glisse ------- */
 .vitrine__tabs {
   grid-area: tabs;
+  position: relative;
+  justify-self: start;
   display: flex;
-  gap: var(--space-6);
+  gap: 2px;
+  max-inline-size: 100%;
+  padding: 5px;
   overflow-x: auto;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 6%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   scrollbar-width: none;
-  border-block-end: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+}
+/* la pastille : positionnée par vitrine-view.ts (--pill-x, --pill-w) */
+.vitrine__pill {
+  position: absolute;
+  inset-block: 5px;
+  inset-inline-start: 0;
+  inline-size: var(--pill-w, 0px);
+  border: 1px solid color-mix(in srgb, var(--accent-text) 55%, transparent);
+  border-radius: var(--radius-full);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tint) 85%, white 8%), var(--tint));
+  box-shadow:
+    0 6px 18px color-mix(in srgb, var(--tint) 60%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.18);
+  transform: translateX(var(--pill-x, 0px));
+  transition:
+    transform 550ms cubic-bezier(0.65, 0, 0.35, 1),
+    inline-size 550ms cubic-bezier(0.65, 0, 0.35, 1);
+  pointer-events: none;
+}
+/* beaucoup de catégories (la liste déborde) : les bords s'estompent pour montrer qu'on peut faire défiler */
+.vitrine__tabs.is-scrollable {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 28px), transparent);
 }
 .vitrine__tab {
   position: relative;
+  z-index: 1; /* au-dessus de la pastille */
   flex-shrink: 0;
-  min-block-size: var(--touch-min);
-  padding: var(--space-2) 0;
+  min-block-size: 40px;
+  padding: 0 var(--space-5);
   border: 0;
+  border-radius: var(--radius-full);
   background: none;
   color: color-mix(in srgb, var(--text) 62%, transparent);
-  font: 600 0.8125rem var(--font-display);
-  letter-spacing: 0.16em;
+  font: 600 0.75rem var(--font-display);
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+  white-space: nowrap;
   cursor: pointer;
   transition: color var(--duration-base) var(--ease-out);
-}
-.vitrine__tab::after {
-  content: '';
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: -1px;
-  block-size: 2px;
-  background: var(--accent);
-  transform: scaleX(0);
-  transition: transform var(--duration-slow) var(--ease-out);
 }
 .vitrine__tab:hover {
   color: var(--text);
 }
 .vitrine__tab[aria-selected='true'] {
-  color: var(--accent-text);
+  color: var(--text); /* texte clair sur la pastille (contraste AA garanti par --tint) */
 }
-.vitrine__tab[aria-selected='true']::after {
-  transform: scaleX(1);
+.vitrine__tab:focus-visible {
+  outline-offset: -2px;
 }
 
 /* --- Textes ------------------------------------------------------------ */
@@ -110,59 +137,102 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: var(--space-2);
-  max-inline-size: 420px;
+  align-items: flex-start;
+  max-inline-size: 400px;
+  padding-block: var(--space-6) var(--space-4); /* de l'air sous les onglets */
   transition: opacity 300ms ease;
 }
-.vitrine__copy.is-dim {
-  opacity: 0.4;
-}
-.vitrine__catblock,
-.vitrine__productblock {
-  transition: opacity 300ms ease;
-}
-.vitrine__copy.is-fade .vitrine__catblock,
-.vitrine__copy.is-fade .vitrine__productblock {
+.vitrine__copy.is-fade,
+.vitrine__card.is-fade {
   opacity: 0;
 }
+
+/* --- Carte du produit : vitrée, posée à droite de la photo ----------------- */
+.vitrine__card {
+  grid-area: card;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-5);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  box-shadow:
+    0 24px 60px rgb(0 0 0 / 0.35),
+    inset 0 1px 0 color-mix(in srgb, var(--text) 8%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transition: opacity 300ms ease;
+}
+.vitrine__card.is-dim {
+  opacity: 0.4;
+}
+.vitrine__card .vitrine__formats {
+  flex-wrap: nowrap;
+}
+.vitrine__card .vitrine__format {
+  flex: 1 1 0;
+  min-inline-size: 0;
+  padding-inline: var(--space-1);
+  font-size: 0.8125rem;
+  white-space: nowrap; /* « 115 boules » sur une ligne */
+}
+.vitrine__card .vitrine__order {
+  justify-content: center;
+  inline-size: 100%;
+  margin-block-start: var(--space-4);
+}
+.vitrine__wa {
+  justify-content: center;
+  align-self: center;
+}
 .vitrine__kicker {
+  grid-area: label;
+  margin-block-end: var(--space-2);
+  padding-inline-start: var(--space-2); /* aligné avec le texte du premier onglet */
   color: var(--accent-text);
   font-size: var(--fs-xs);
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
 }
+/* noms longs (souvent saisis en capitales) : taille modérée pour tenir en 2 lignes ;
+   3 lignes au plus par sécurité, le nom n'est jamais coupé en temps normal */
 .vitrine__cat {
+  display: -webkit-box;
+  overflow: hidden;
   margin-block: var(--space-1) var(--space-3);
-  font-size: clamp(2rem, 3.8vw, 3.4rem);
-  line-height: 1.05;
+  font-size: clamp(1.6rem, 2.2vw, 2.15rem);
+  line-height: 1.1;
+  overflow-wrap: break-word;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 .vitrine__desc {
+  display: -webkit-box;
+  overflow: hidden;
   color: var(--text-muted);
   max-inline-size: 38ch;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 .vitrine__rule {
   inline-size: 56px;
   block-size: 2px;
-  margin-block: var(--space-4);
+  margin-block: var(--space-5) var(--space-2);
   background: var(--accent);
 }
 .vitrine__pname {
   font-family: var(--font-display);
   font-size: var(--fs-xl);
   font-weight: 700;
+  line-height: 1.2;
 }
 .vitrine__price {
   color: var(--accent-text);
   font-size: var(--fs-lg);
   font-weight: 600;
-}
-.vitrine__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3) var(--space-5);
-  margin-block-start: var(--space-4);
 }
 .vitrine__order {
   border-color: color-mix(in srgb, var(--accent) 70%, transparent);
@@ -175,6 +245,7 @@
 }
 /* choix du format (30 / 55 / 115 boules…) */
 .vitrine__formats {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
@@ -183,7 +254,43 @@
 .vitrine__formats:empty {
   display: none;
 }
+/* description de la photo du format choisi */
+.vitrine__vdesc {
+  max-inline-size: 42ch;
+  margin-block-start: var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+}
+.vitrine__vdesc:empty {
+  display: none;
+}
+/* pastille du format choisi : positionnée par vitrine-view.ts (--fx, --fy, --fw, --fh), elle glisse */
+.vitrine__fpill {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: var(--fw, 0px);
+  block-size: var(--fh, 0px);
+  border: 1px solid var(--accent-text);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tint) 85%, white 8%), var(--tint));
+  box-shadow:
+    0 8px 22px color-mix(in srgb, var(--tint) 55%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.16);
+  transform: translate(var(--fx, 0px), var(--fy, 0px));
+  transition:
+    transform 420ms cubic-bezier(0.65, 0, 0.35, 1),
+    inline-size 420ms cubic-bezier(0.65, 0, 0.35, 1),
+    block-size 420ms cubic-bezier(0.65, 0, 0.35, 1);
+  pointer-events: none;
+}
+.vitrine__formats.is-jump .vitrine__fpill {
+  transition: none; /* nouveau produit : la pastille se pose directement */
+}
 .vitrine__format {
+  position: relative;
+  z-index: 1; /* au-dessus de la pastille */
   display: grid;
   justify-items: center;
   gap: 1px;
@@ -209,12 +316,11 @@
   border-color: var(--accent);
 }
 .vitrine__format.is-selected {
-  border-color: var(--accent-text);
-  background: color-mix(in srgb, var(--tint) 70%, transparent);
-  box-shadow: inset 0 0 0 1px var(--accent-text);
+  border-color: transparent;
+  background: transparent; /* le fond est la pastille, qui glisse dessous */
 }
 .vitrine__format.is-selected small {
-  color: var(--accent-text);
+  color: color-mix(in srgb, var(--text) 85%, transparent); /* lisible sur la pastille */
 }
 .vitrine__format:disabled {
   opacity: 0.4;
@@ -223,11 +329,6 @@
 .vitrine__order:disabled {
   opacity: 0.55;
   cursor: not-allowed;
-}
-.vitrine__links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 var(--space-5);
 }
 
 .vitrine__all {
@@ -244,12 +345,12 @@
   color: var(--accent-text);
 }
 
-/* --- ScÃ¨ne et relais ------------------------------------------------------ */
+/* --- Scène et relais ------------------------------------------------------ */
 .vitrine__stage {
   grid-area: stage;
   position: relative;
   place-self: center;
-  inline-size: min(56vh, 38vw, 560px);
+  inline-size: min(56vh, 100%, 560px);
   aspect-ratio: 1;
   touch-action: pan-y; /* le balayage horizontal change de produit */
   user-select: none;
@@ -277,7 +378,7 @@
 .vitrine__item img,
 .vitrine__noimg {
   position: absolute;
-  inset: 6% 7% 9%; /* zone carrÃ©e, le produit y est contenu sans dÃ©formation */
+  inset: 6% 7% 9%; /* zone carrée, le produit y est contenu sans déformation */
   inline-size: 86%;
   block-size: 85%;
   object-fit: contain;
@@ -306,7 +407,7 @@
   filter: blur(6px);
 }
 
-/* Ã‰tats : Ã©cart avec le produit actif */
+/* États : écart avec le produit actif */
 .vitrine__item[data-state='active'] {
   transform: none;
   opacity: 1;
@@ -327,6 +428,12 @@
 }
 .vitrine__item img {
   pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+/* changement de format : la photo s'efface puis la nouvelle apparaît */
+.vitrine__item img.is-swapping {
+  opacity: 0;
+  transform: scale(0.94);
 }
 .vitrine__item[data-state='hidden'] {
   transform: translate(calc(var(--next-x) * var(--k)), calc(var(--next-y) * var(--k))) scale(0.25);
@@ -344,11 +451,11 @@
   opacity: 0.6;
 }
 
-/* --- FlÃ¨ches et compteur ------------------------------------------------- */
+/* --- Flèches et compteur ------------------------------------------------- */
 .vitrine__nav {
   grid-area: nav;
   position: relative;
-  z-index: 2; /* toujours cliquable, mÃªme pendant un relais */
+  z-index: 2; /* toujours cliquable, même pendant un relais */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -391,8 +498,8 @@
 }
 
 /* --- Chargement et messages ------------------------------------------------ */
-/* message (vitrine vide ou indisponible) : une seule colonne centrÃ©e, sans la grille de la vitrine
-   (sinon le bouton s'Ã©tire pour remplir la rangÃ©e centrale, haute de tout l'Ã©cran) */
+/* message (vitrine vide ou indisponible) : une seule colonne centrée, sans la grille de la vitrine
+   (sinon le bouton s'étire pour remplir la rangée centrale, haute de tout l'écran) */
 .vitrine__inner--message {
   display: flex;
   flex-direction: column;
@@ -404,7 +511,7 @@
 .vitrine__inner--message .vitrine__cat {
   margin: 0;
 }
-/* pot de bonbons animÃ© (Lottie), au-dessus du titre ; place rÃ©servÃ©e : pas de saut Ã  l'affichage */
+/* pot de bonbons animé (Lottie), au-dessus du titre ; place réservée : pas de saut à l'affichage */
 .vitrine__lottie {
   inline-size: clamp(180px, 28vh, 260px);
   aspect-ratio: 1;
@@ -457,41 +564,78 @@
   border-radius: 50%;
 }
 
-/* --- Mobile : une colonne, trajets raccourcis de moitiÃ© ------------------- */
+/* --- Tablette : catégorie puis carte à gauche, photo à droite ------------- */
+@media (min-width: 720px) and (max-width: 1099.98px) {
+  .vitrine__inner {
+    grid-template-columns: minmax(280px, 40%) minmax(0, 1fr);
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'label label'
+      'tabs tabs'
+      'copy stage'
+      'card stage'
+      'nav nav';
+  }
+  .vitrine__copy {
+    padding-block-end: var(--space-2);
+  }
+  .vitrine__card {
+    align-self: start;
+    max-inline-size: 360px;
+  }
+}
+
+/* --- Mobile : une colonne, trajets raccourcis de moitié ------------------- */
 @media (max-width: 719.98px) {
   .vitrine {
     --k: 0.5;
-    --next-x: 120%; /* Ã— 0,5 : dÃ©borde lÃ©gÃ¨rement de la scÃ¨ne, reste dans l'Ã©cran */
-    --next-y: 70%;
+    --next-x: 80%; /* × 0,5 : vignette du suivant au bord droit de la scène, dans l'écran */
+    --next-y: 72%;
     min-block-size: 640px;
   }
   .vitrine__inner {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
     grid-template-areas:
+      'label'
       'tabs'
-      'stage'
       'copy'
+      'stage'
+      'card'
       'nav';
+    row-gap: var(--space-2);
     inline-size: calc(100% - 2 * var(--space-4));
     padding-block: var(--space-2) var(--space-4);
   }
   .vitrine__tabs {
-    gap: var(--space-5);
-    margin-inline: calc(-1 * var(--space-4));
+    justify-self: stretch;
+  }
+  .vitrine__tab {
     padding-inline: var(--space-4);
   }
+  /* photo du produit plus grande sur téléphone */
   .vitrine__stage {
-    inline-size: min(64vw, 34svh);
+    inline-size: min(86vw, 46svh);
   }
   .vitrine__copy {
     align-items: center;
     gap: 2px;
     max-inline-size: none;
+    padding-block: var(--space-3) 0;
     text-align: center;
   }
-  .vitrine__kicker {
+  .vitrine__copy .vitrine__rule {
     display: none;
+  }
+  .vitrine__copy .vitrine__all {
+    min-block-size: 36px;
+  }
+  .vitrine__card {
+    padding: var(--space-4);
+  }
+  .vitrine__kicker {
+    justify-self: center;
+    padding-inline-start: 0;
   }
   .vitrine__cat {
     margin-block: 0 var(--space-1);
@@ -504,13 +648,6 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
   }
-  .vitrine__rule {
-    margin-block: var(--space-2);
-  }
-  .vitrine__actions {
-    justify-content: center;
-    margin-block-start: var(--space-2);
-  }
   .vitrine__nav {
     padding-block-start: var(--space-3);
   }
@@ -520,8 +657,12 @@
   }
 }
 
-/* --- Animations rÃ©duites : aucun dÃ©placement, fondu de 200 ms ------------- */
+/* --- Animations réduites : aucun déplacement, fondu de 200 ms ------------- */
 @media (prefers-reduced-motion: reduce) {
+  .vitrine__pill,
+  .vitrine__fpill {
+    transition: none; /* les pastilles changent de place sans glisser */
+  }
   .vitrine {
     transition:
       --tint 200ms ease,
@@ -538,8 +679,7 @@
     pointer-events: none;
   }
   .vitrine__copy,
-  .vitrine__catblock,
-  .vitrine__productblock {
+  .vitrine__card {
     transition-duration: 200ms;
   }
 }

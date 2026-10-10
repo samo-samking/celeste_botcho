@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="r" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ef3b47"/>
+      <stop offset="1" stop-color="#a3121f"/>
+    </linearGradient>
+    <linearGradient id="w" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e6e1d8"/>
+    </linearGradient>
+  </defs>
+  <!-- bonnet : cône qui retombe vers la droite -->
+  <path d="M9 46C10 31 19 15 36 10c11-3 20 2 21 14-3-4-8-5-12-3 0 9 3 17 9 25Z" fill="url(#r)"/>
+  <!-- reflet -->
+  <path d="M16 40c2-11 9-21 19-25" fill="none" stroke="#ff8a8f" stroke-width="2.5" stroke-linecap="round" opacity=".55"/>
+  <!-- pompon -->
+  <circle cx="55" cy="27" r="6.5" fill="url(#w)"/>
+  <!-- bordure en fourrure -->
+  <rect x="4" y="42" width="54" height="13" rx="6.5" fill="url(#w)"/>
+  <path d="M10 48.5h42" stroke="#d6cfc3" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="1 5"/>
+</svg>
